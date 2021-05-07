@@ -112,7 +112,7 @@ class CategoryControllerTest extends TestCase
 
         $response
             ->assertStatus(204)
-            ->assertNoContent(204);
+            ->assertNoContent();
     }
 
     private function routeStore() 
