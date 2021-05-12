@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Traits\Uuid;
 // Better PHPUnit => VSCode Extension
 // Laravel Wire | inertiajs
-class CategoryTest extends TestCase
+class CategoryUnitTest extends TestCase
 {
     private $category;
     

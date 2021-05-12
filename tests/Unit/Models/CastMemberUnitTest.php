@@ -7,7 +7,7 @@ use App\Models\CastMember;
 use PHPUnit\Framework\TestCase;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class CastMemberTest extends TestCase
+class CastMemberUnitTest extends TestCase
 {
     private $castMember;
 
@@ -61,7 +61,8 @@ class CastMemberTest extends TestCase
     public function testCastsAttributes()
     {
         $casts = [
-            'id' => 'string'
+            'id' => 'string',
+            'type' => 'integer'
         ];
         $this->assertEquals($casts, $this->castMember->getCasts());
     }
