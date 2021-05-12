@@ -27,7 +27,7 @@ class CastMemberControllerTest extends TestCase
 
     public function testIndex()
     {
-        $response = $this->get(route('cast-members.index'));
+        $response = $this->get(route('cast_members.index'));
         $response
             ->assertStatus(200)
             ->assertJson([$this->castMember->toArray()]);
@@ -36,7 +36,7 @@ class CastMemberControllerTest extends TestCase
 
     public function testShow()
     {
-        $response = $this->get(route('cast-members.show', ['cast_member' => $this->castMember->id]));
+        $response = $this->get(route('cast_members.show', ['cast_member' => $this->castMember->id]));
         $response
             ->assertStatus(200)
             ->assertJson($this->castMember->toArray());
@@ -119,17 +119,17 @@ class CastMemberControllerTest extends TestCase
 
     private function routeStore() 
     {
-        return route('cast-members.store');
+        return route('cast_members.store');
     }
 
     private function routeUpdate()
     {
-        return route('cast-members.update', $this->castMember->id);
+        return route('cast_members.update', $this->castMember->id);
     }
 
     protected function routeDestroy()
     {
-        return route('cast-members.destroy', $this->castMember->id);
+        return route('cast_members.destroy', $this->castMember->id);
     }
 
     private function model() {
