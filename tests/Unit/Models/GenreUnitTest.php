@@ -59,4 +59,11 @@ class GenreUnitTest extends TestCase
 
         $this->assertEquals($casts, $this->genre->getCasts());
     }
+
+    public function testCategoriesRelation()
+    {
+        $tableName = 'category_genre';
+        $relation = $this->genre->categories();
+        $this->assertEquals($tableName, $relation->getTable());
+    }
 }
