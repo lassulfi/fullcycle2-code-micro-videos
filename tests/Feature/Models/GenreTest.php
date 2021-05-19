@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Models;
 
+use App\Models\Category;
 use App\Models\Genre;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -33,9 +34,14 @@ class GenreTest extends TestCase
 
     public function testCreate()
     {
+        /** @var Category $category */
+        $category = factory(Category::class)->create();
+        
+        /** @var Genre $genre */
         $genre = Genre::create([
             'name' => 'test1'
         ]);
+        $genre->categories()->attach($category->id);
         $genre->refresh();
 
         $this->assertNotNull($genre->id);
@@ -43,6 +49,10 @@ class GenreTest extends TestCase
         $this->assertRegExp('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $genre->id);
         $this->assertEquals('test1', $genre->name);
         $this->assertTrue($genre->is_active);
+        
+        $result = $genre->categories()->find($category->id);
+        
+        $this->assertEquals($category->id, $result->id);
 
         $genre = Genre::create([
             'name' => 'test1',

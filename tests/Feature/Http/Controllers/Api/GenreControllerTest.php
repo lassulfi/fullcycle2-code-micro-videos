@@ -2,26 +2,34 @@
 
 namespace Tests\Feature\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\GenreController;
+use App\Models\Category;
 use App\Models\Genre;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestResponse;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Http\Request;
+use Tests\Exceptions\TestException;
 use Tests\TestCase;
+use Tests\Traits\ControllerMocks;
 use Tests\Traits\TestSaves;
 use Tests\Traits\TestValidations;
 
 class GenreControllerTest extends TestCase
 {
-    // TODO: implement the use of TestValidations Trait
-    use DatabaseMigrations, TestValidations, TestSaves;
+    use DatabaseMigrations, TestValidations, TestSaves, ControllerMocks;
 
     private $genre;
+    private $sendData;
 
     public function setUp(): void
     {
         parent::setUp();
         $this->genre = factory(Genre::class)->create();
+        $this->sendData = [
+            'name' => 'test'
+        ];
     }
 
     public function testIndex()
@@ -42,20 +50,27 @@ class GenreControllerTest extends TestCase
             ->assertJson($this->genre->toArray());
     }
 
-    public function testInvalidationData()
+    public function testInvalidationRequired()
     {
         $data = [
-            'name' => ''
+            'name' => '',
+            'categories_id' => ''
         ];
         $this->assertInvalidationInStoreAction($data, 'required');
         $this->assertInvalidationInUpdateAction($data, 'required');
+    }
 
+    public function testInvalidationMax()
+    {
         $data = [
             'name' => str_repeat('a', 256)
         ];
         $this->assertInvalidationInStoreAction($data, 'max.string', ['max' => 255]);
         $this->assertInvalidationInUpdateAction($data, 'max.string', ['max' => 255]);
-
+    }
+    
+    public function testInvalidationIsActiveField()
+    {
         $data = [
             'is_active' => 'a'
         ];
@@ -63,35 +78,113 @@ class GenreControllerTest extends TestCase
         $this->assertInvalidationInUpdateAction($data, 'boolean');
     }
 
-    public function testStore()
+    public function testInvalidationCategoriesIdField()
     {
         $data = [
-            'name' => 'test'
+            'categories_id'=> 'a'
         ];
-        $response = $this->assertStore($data, $data + ['is_active' => true, 'deleted_at' => null]);
-        $response->assertJsonStructure([
-            'created_at', 'updated_at'
-        ]);
+        $this->assertInvalidationInStoreAction($data, 'array');
+        $this->assertInvalidationInUpdateAction($data, 'array');
 
         $data = [
-            'name' => 'test',
-            'is_active' => false
+            'categories_id'=> [100]
         ];
-        $response = $this->assertStore($data, $data + ['is_active' => false]);
+        $this->assertInvalidationInStoreAction($data, 'exists');
+        $this->assertInvalidationInUpdateAction($data, 'exists'); 
     }
 
-    public function testUpdate()
+    public function testSave()
     {
-        $this->genre = factory(Genre::class)->create(['is_active' => false]);
-        $data = ['name' => 'test', 'is_active' => true];
-        $response = $this->assertUpdate($data, $data + ['deleted_at' => null]);
-        $response->assertJsonStructure([
-            'created_at', 'updated_at'
-        ]);
-        
-        $genre = factory(Genre::class)->create(['is_active' => false]);
-        $response = $this->json('PUT', route('genres.update', ['genre' => $genre->id]), 
-            ['name' => 'test', 'is_active' => true]);
+        $category = factory(Category::class)->create();
+        $data = [
+            [
+                'send_data' => $this->sendData + ['categories_id' => [$category->id]],
+                'test_data' => $this->sendData + ['is_active' => true]
+            ],
+            [
+                'send_data' => $this->sendData + ['is_active' => false, 'categories_id' => [$category->id]],
+                'test_data' => $this->sendData + ['is_active' => false]
+            ],
+        ];
+
+        foreach ($data as $key => $value) {
+            $response = $this->assertStore($value['send_data'], $value['test_data'] + ['deleted_at' => null]);
+            $response->assertJsonStructure([
+                'created_at',
+                'updated_at'
+            ]);
+            $response = $this->assertUpdate($value['send_data'], $value['test_data'] + ['deleted_at' => null]);
+            $response->assertJsonStructure([
+                'created_at',
+                'updated_at'
+            ]);
+        }
+    }
+
+    public function testRollbackStore()
+    {
+        $mockData = [
+            [
+                'mockFunction' => 'validate',
+                'mockReturn' => $this->sendData
+            ],
+            [
+                'mockFunction' => 'ruleStore',
+                'mockReturn' => []
+            ]
+        ];
+        $controller = \Mockery::mock(GenreController::class)
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
+        foreach ($mockData as $key => $value) {
+            $this->mockFunction($controller, $value);
+        }
+        $controller->shouldReceive('handleRelations')
+            ->once()
+            ->andThrow(new TestException());
+
+        $request = \Mockery::mock(Request::class);
+
+        try {
+            $controller->store($request);
+        } catch (TestException $exception) {
+            $this->assertCount(1, Genre::all());
+        }
+    }
+
+    public function testRollbackUpdate()
+    {
+        $mockData = [
+            [
+                'mockFunction' => 'findOrFail',
+                'mockReturn' => $this->genre
+            ],
+            [
+                'mockFunction' => 'validate',
+                'mockReturn' => $this->sendData
+            ],
+            [
+                'mockFunction' => 'ruleUpdate',
+                'mockReturn' => []
+            ]
+        ];
+        $controller = \Mockery::mock(GenreController::class)
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
+        foreach ($mockData as $key => $value) {
+            $this->mockFunction($controller, $value);
+        }
+        $controller->shouldReceive('handleRelations')
+            ->once()
+            ->andThrow(new TestException());
+
+        $request = \Mockery::mock(Request::class);
+
+        try {
+            $controller->update($request, $this->genre->id);
+        } catch (TestException $exception) {
+            $this->assertCount(1, Genre::all());
+        }
     }
 
     public function testDestroy()
