@@ -4,7 +4,7 @@ namespace Tests\Unit\Models;
 
 use App\Models\Traits\Uuid;
 use App\Models\Video;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class VideoUnitTest extends TestCase

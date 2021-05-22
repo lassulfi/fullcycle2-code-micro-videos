@@ -3,7 +3,7 @@
 namespace Tests\Unit\Models;
 
 use App\Models\Category;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Traits\Uuid;
 // Better PHPUnit => VSCode Extension
