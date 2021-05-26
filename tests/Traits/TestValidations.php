@@ -35,7 +35,7 @@ trait TestValidations
         $response
             ->assertStatus(422)
             ->assertJsonValidationErrors($fields);
-
+        
         foreach ($fields as $field) {
             $fieldName = str_replace('_', ' ', $field);
             $response->assertJsonFragment([
