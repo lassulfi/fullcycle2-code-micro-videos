@@ -34,7 +34,9 @@ class VideoUnitTest extends TestCase
             'rating',
             'duration',
             'video_file',
-            'thumb_file'
+            'thumb_file',
+            'banner_file',
+            'trailer_file'
         ];
         $this->assertEquals($fillable, $this->video->getFillable());
     }
@@ -95,7 +97,12 @@ class VideoUnitTest extends TestCase
 
     public function testFileFields()
     {
-        $fileFields = ['video_file', 'thumb_file'];
+        $fileFields = [
+            'video_file', 
+            'thumb_file', 
+            'banner_file',
+            'trailer_file'
+        ];
         $this->assertEquals($fileFields, Video::$fileFields);
     }
 }

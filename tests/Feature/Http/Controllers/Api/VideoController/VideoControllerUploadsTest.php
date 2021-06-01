@@ -23,14 +23,49 @@ class VideoControllerUploadsTest extends BaseVideoControllerTestCase
 {
     use TestValidations, TestUploads;
     
-    public function testInvalidationInVideoFileField()
+    // TODO: update this test for the other files
+    public function testInvalidationInVideoFileFields()
     {
-        $this->assertInvalidationFile(
-            'video_file',
-            'mp4',
-            512,
-            'mimetypes', ['values' => 'video/mp4']
-        );
+        $fileFields = [
+            [
+                'field_name' => 'video_file',
+                'extension' => 'mp4',
+                'max_size' => 52428800,
+                'rule' => 'mimetypes',
+                'rule_params' => ['values' => 'video/mp4']
+            ],
+            [
+                'field_name' => 'thumb_file',
+                'extension' => 'jpg',
+                'max_size' => 5120,
+                'rule' => 'mimetypes',
+                'rule_params' => ['values' => 'image/jpeg']
+            ],
+            [
+                'field_name' => 'banner_file',
+                'extension' => 'jpg',
+                'max_size' => 10240,
+                'rule' => 'mimetypes',
+                'rule_params' => ['values' => 'image/jpeg']
+            ],
+            [
+                'field_name' => 'trailer_file',
+                'extension' => 'mp4',
+                'max_size' => 1048576,
+                'rule' => 'mimetypes',
+                'rule_params' => ['values' => 'video/mp4']
+            ]
+        ];
+
+        foreach ($fileFields as $fields) {
+            $this->assertInvalidationFile(
+                $fields['field_name'], 
+                $fields['extension'],
+                $fields['max_size'],
+                $fields['rule'],
+                $fields['rule_params']
+            );
+        }
     }
 
     public function testStoreWithFiles()
@@ -100,7 +135,10 @@ class VideoControllerUploadsTest extends BaseVideoControllerTestCase
     protected function getFiles()
     {
         return [
-            'video_file' => UploadedFile::fake()->create("video_file.mp4")
+            'video_file' => UploadedFile::fake()->create("video_file.mp4"),
+            'thumb_file' => UploadedFile::fake()->create('thumb_file.jpg'),
+            'banner_file' => UploadedFile::fake()->create('banner_file.jpg'),
+            'trailer_file' => UploadedFile::fake()->create("trailer_file.mp4"),
         ];
     }
 }
