@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Models;
+namespace Tests\Feature\Models\Video;
 
 use App\Models\Category;
 use App\Models\Genre;
@@ -13,24 +13,18 @@ use Ramsey\Uuid\Uuid;
 use Tests\Exceptions\TestException;
 use Tests\TestCase;
 
-class VideoTest extends TestCase
+class VideoCrudTest extends BaseVideoTestCase
 {
-    use DatabaseMigrations;
-
-    private $data;
+    private $fileFields = [];
 
     protected function setUp(): void
     {
+        foreach (Video::$fileFields as $field) {
+            $this->fileFields[$field] = "$field.test";
+        }
         parent::setUp();
-        $this->data = [
-            'title' => 'title',
-            'description' => 'description',
-            'year_launched' => 2010,
-            'rating' => Video::RATING_LIST[0],
-            'duration' => 90
-        ];
     }
-
+    
     public function testList()
     {
         factory(Video::class, 1)->create();
@@ -47,6 +41,7 @@ class VideoTest extends TestCase
             'rating',
             'duration',
             'video_file',
+            'thumb_file',
             'created_at',
             'updated_at',
             'deleted_at'
@@ -55,18 +50,18 @@ class VideoTest extends TestCase
 
     public function testCreateWithBasicFields()
     {
-        $video = Video::create($this->data);
+        $video = Video::create($this->data + $this->fileFields);
         $video->refresh();
 
         $this->assertNotNull($video->id);
         Uuid::isValid($video->id);
         $this->assertIsString($video->id);
         $this->assertRegExp('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $video->id);
-        $this->assertDatabaseHas('videos', $this->data + ['opened' => false]);
+        $this->assertDatabaseHas('videos', $this->data + $this->fileFields + ['opened' => false]);
 
-        $video = Video::create($this->data + ['opened' => true]);
+        $video = Video::create($this->data + $this->fileFields + ['opened' => true]);
         $this->assertTrue($video->opened);
-        $this->assertDatabaseHas('videos', $this->data + ['opened' => true]);
+        $this->assertDatabaseHas('videos', $this->data + $this->fileFields + ['opened' => true]);
     }
 
     public function testCreateWithRelations()
@@ -84,14 +79,14 @@ class VideoTest extends TestCase
     public function testUpdateWithBasicFields()
     {
         $video = factory(Video::class)->create(['opened' => false]);
-        $video->update($this->data);
+        $video->update($this->data + $this->fileFields);
         $this->assertFalse($video->opened);
-        $this->assertDatabaseHas('videos', $this->data + ['opened' => false]);
+        $this->assertDatabaseHas('videos', $this->data + $this->fileFields + ['opened' => false]);
         
         $video = factory(Video::class)->create($this->data + ['opened' => false]);
-        $video->update($this->data + ['opened' => true]);
+        $video->update($this->data + $this->fileFields + ['opened' => true]);
         $this->assertTrue($video->opened);
-        $this->assertDatabaseHas('videos', $this->data + ['opened' => true]);
+        $this->assertDatabaseHas('videos', $this->data + $this->fileFields + ['opened' => true]);
     }
 
     public function testUpdateWithRelations()

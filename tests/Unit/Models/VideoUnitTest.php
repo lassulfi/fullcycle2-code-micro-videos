@@ -32,7 +32,9 @@ class VideoUnitTest extends TestCase
             'year_launched',
             'opened',
             'rating',
-            'duration'
+            'duration',
+            'video_file',
+            'thumb_file'
         ];
         $this->assertEquals($fillable, $this->video->getFillable());
     }
@@ -89,5 +91,11 @@ class VideoUnitTest extends TestCase
         $tableName = 'genre_video';
         $relation = $this->video->genres();
         $this->assertEquals($tableName, $relation->getTable());
+    }
+
+    public function testFileFields()
+    {
+        $fileFields = ['video_file', 'thumb_file'];
+        $this->assertEquals($fileFields, Video::$fileFields);
     }
 }
