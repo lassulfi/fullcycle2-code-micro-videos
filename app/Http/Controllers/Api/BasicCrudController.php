@@ -4,15 +4,21 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 
 abstract class BasicCrudController extends Controller
 {
-
+    protected $paginationSize = 15;
+    
     protected abstract function model();
 
     protected abstract function ruleStore();
 
     protected abstract function ruleUpdate();
+
+    protected abstract function resource();
+
+    protected abstract function resourceColletion();
 
     /**
      * Display a listing of the resource.
@@ -21,7 +27,13 @@ abstract class BasicCrudController extends Controller
      */
     public function index()
     {
-        return $this->model()::all();
+        $data = !$this->paginationSize ? $this->model()::all() : $this->model()::paginate($this->paginationSize);
+        $resourceColletionClass = $this->resourceColletion();
+        $refClass = new \ReflectionClass($resourceColletionClass);
+                
+        return $refClass->isSubclassOf(ResourceCollection::class)
+            ? new $resourceColletionClass($data)
+            : $resourceColletionClass::collection($data);
     }
 
     /**
@@ -35,7 +47,8 @@ abstract class BasicCrudController extends Controller
         $validatedData = $this->validate($request, $this->ruleStore());
         $obj = $this->model()::create($validatedData);
         $obj->refresh();
-        return $obj;
+        $resource = $this->resource();
+        return new $resource($obj);
     }
 
     protected function findOrFail($id)
@@ -54,7 +67,9 @@ abstract class BasicCrudController extends Controller
     public function show(string $id)
     {
         $obj = $this->findOrFail($id);
-        return $obj;
+        $resource = $this->resource();
+
+        return new $resource($obj);
     }
 
     /**
@@ -70,8 +85,9 @@ abstract class BasicCrudController extends Controller
 
         $validatedData = $this->validate($request, $this->ruleUpdate());
         $obj->update($validatedData);
+        $resource = $this->resource();
 
-        return $obj;
+        return new $resource($obj);
     }
 
     /**

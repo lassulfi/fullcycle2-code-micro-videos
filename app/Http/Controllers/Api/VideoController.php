@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Resources\VideoResource;
 use App\Models\Video;
 use App\Rules\GenresHasCategoriesRule;
 use App\Rules\RelatesToCategory;
@@ -23,10 +24,10 @@ class VideoController extends BasicCrudController
             'duration' => 'required|integer',
             'categories_id' => 'required|array|exists:categories,id,deleted_at,NULL',
             'genres_id' => ['required', 'array', 'exists:genres,id,deleted_at,NULL'],
-            'video_file' => 'mimetypes:video/mp4|max:52428800',
-            'thumb_file' => 'mimetypes:image/jpeg|max:5120',
-            'banner_file' => 'mimetypes:image/jpeg|max:10240',
-            'trailer_file' => 'mimetypes:video/mp4|max:1048576',
+            'video_file' => 'mimetypes:video/mp4|max:' . Video::VIDEO_FILE_MAX_SIZE, // 10GB
+            'thumb_file' => 'image|max:' . Video::THUMB_FILE_MAX_SIZE , // 5MB
+            'banner_file' => 'image|max:' . Video::BANNER_FILE_MAX_SIZE, // 10MB
+            'trailer_file' => 'mimetypes:video/mp4|max:' . Video::TRAILER_FILE_MAX_SIZE, // 1GB
         ];
     }
 
@@ -36,7 +37,8 @@ class VideoController extends BasicCrudController
         $validatedData = $this->validate($request, $this->ruleStore());
         $obj = $this->model()::create($validatedData);
         $obj->refresh();
-        return $obj;
+        $resource = $this->resource();
+        return new $resource($obj);
     }
     
     public function update(Request $request, string $id)
@@ -45,7 +47,8 @@ class VideoController extends BasicCrudController
         $this->addRuleIfGenreHasCategories($request);
         $validatedData = $this->validate($request, $this->ruleUpdate());
         $obj->update($validatedData);
-        return $obj;
+        $resource = $this->resource();
+        return new $resource($obj);
     }
 
     protected function addRuleIfGenreHasCategories(Request $request)
@@ -68,5 +71,15 @@ class VideoController extends BasicCrudController
     protected function ruleUpdate()
     {
         return $this->rules;
+    }
+
+    protected function resourceColletion()
+    {
+        return $this->resource();
+    }
+
+    protected function resource()
+    {
+        return VideoResource::class;
     }
 }

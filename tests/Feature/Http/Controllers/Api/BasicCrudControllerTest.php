@@ -40,7 +40,7 @@ class BasicCrudControllerTest extends TestCase
     {
         /** @var CategoryStub $category */
         $category = CategoryStub::create(['name' => 'test_name', 'description' => 'test_description']);
-        $result = $this->controller->index()->toArray();
+        $result = $this->controller->index()->toArray(null);
         $this->assertEquals([$category->toArray()], $result);
     }
 
@@ -97,7 +97,7 @@ class BasicCrudControllerTest extends TestCase
     {
         /** @var CategoryStub $category */
         $category = CategoryStub::create(['name' => 'test_name', 'description' => 'test_description']);
-        $result = $this->controller->show($category->id)->toArray();
+        $result = $this->controller->show($category->id)->toArray(null);
         $this->assertEquals($category->toArray(), $result);
     }
 
@@ -131,7 +131,7 @@ class BasicCrudControllerTest extends TestCase
             ->andReturn(['name' => 'name_updated', 'description' => 'description_updated', 'is_active' => false]);
         $result = $this->controller->update($request, $category->id);
         $category = CategoryStub::find(1)->toArray();
-        $this->assertEquals($category, $result->toArray());
+        $this->assertEquals($category, $result->toArray($request));
     }
 
     public function testUpdateWhenIdIsInvalid()
@@ -169,7 +169,7 @@ class BasicCrudControllerTest extends TestCase
         $obj = $this->controller->store($request);
         $this->assertEquals(
             CategoryStub::find(1)->toArray(),
-            $obj->toArray()
+            $obj->toArray($request)
         );
 
         CategoryStub::truncate();
