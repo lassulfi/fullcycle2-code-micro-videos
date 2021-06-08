@@ -32,7 +32,8 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
             ->assertStatus(200)
             ->assertJson([
                 'meta' => ['per_page' => 15]
-            ])->assertJsonStructure([
+            ])
+            ->assertJsonStructure([
                 'data' => [
                     '*' => $this->serializedFields
                 ],
@@ -41,6 +42,7 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
             ]);
         $resource = VideoResource::collection(collect([$this->video]));
         $this->assertResource($response, $resource);
+        $this->assertIfFilesUrlsExists($this->video, $response);
     }
 
     public function testShow()
@@ -55,6 +57,7 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
         $id = $response->json('data.id');
         $resource = new VideoResource(Video::find($id));
         $this->assertResource($response, $resource);
+        $this->assertIfFilesUrlsExists($this->video, $response);
     }
 
     public function testInvalidationRequired()
