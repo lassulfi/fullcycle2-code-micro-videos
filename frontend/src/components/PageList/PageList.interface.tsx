@@ -8,15 +8,11 @@ export interface FabProps {
     to: string;
 }
 
-export interface TableProps {
-    title: string;
-    route: string;
-    columnsDefinition: MUIDataTableColumn[];
-}
-
 export interface PageListProps {
     pageTitle: string;
     boxDirection: string;
+    data: any;
     fab: FabProps;
-    table: TableProps;
+    tableTitle: string;
+    columnsDefinition: MUIDataTableColumn[];
 }

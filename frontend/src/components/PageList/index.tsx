@@ -21,9 +21,9 @@ const PageList: React.FC<PageListProps> = (props) => {
             </Box>
             <Box>
                 <Table 
-                    title={props.table.title} 
-                    route={props.table.route} 
-                    columnsDefinition={props.table.columnsDefinition}
+                    title={props.tableTitle}
+                    data={props.data}
+                    columnsDefinition={props.columnsDefinition}
                 />
             </Box>
         </Page>
