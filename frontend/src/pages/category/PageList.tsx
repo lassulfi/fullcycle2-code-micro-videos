@@ -1,16 +1,19 @@
 // @flow 
-import * as React from 'react';
+import React, { useState } from 'react';
 // import { Box, Fab, PropTypes } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 // import { Page } from '../../components/Page';
 // import AddIcon from '@material-ui/icons/Add';
 // import Table from './Table';
 import Page from '../../components/PageList';
-import { FabProps, TableProps } from '../../components/PageList/PageList.interface';
+import { FabProps } from '../../components/PageList/PageList.interface';
 import MuiChip from '../../components/Chip';
 import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
 import { PropTypes } from '@material-ui/core';
+import categoryHttp from '../../utils/http/category-http';
+import { MUIDataTableColumn } from 'mui-datatables';
+import Category from './category-interface';
 
 type MuiChipPropsType = {
     label: string;
@@ -47,41 +50,45 @@ const fab: FabProps = {
     size: 'small'
 }
 
-const table: TableProps = {
-    title: 'Listagem de categorias',
-    route: 'categories',
-    columnsDefinition: [
-        {
-            name: "name",
-            label: "Nome"
-        }, {
-            name: "is_active",
-            label: "Ativo?",
-            options: {
-                customBodyRender(value, tableMeta, updateValue) {
-                    return renderChip(String(value));
-                }
-            }
-        },
-        {
-            name: "created_at",
-            label: "Criado em",
-            options: {
-                customBodyRender(value, tableMeta, updateValue) {
-                    return <span>{format(parseISO(value), 'dd/MM/yyyy')}</span>
-                }
+const columnsDefinition: MUIDataTableColumn[] = [
+    {
+        name: "name",
+        label: "Nome"
+    }, {
+        name: "is_active",
+        label: "Ativo?",
+        options: {
+            customBodyRender(value, tableMeta, updateValue) {
+                return renderChip(String(value));
             }
         }
-    ]
-}
+    },
+    {
+        name: "created_at",
+        label: "Criado em",
+        options: {
+            customBodyRender(value, tableMeta, updateValue) {
+                return <span>{format(parseISO(value), 'dd/MM/yyyy')}</span>
+            }
+        }
+    }
+];
 
 const PageList = () => {
+    const [data, setData] = useState<Category[]>([]);
+    
+    categoryHttp
+        .list<{ data: Category[] }>()
+        .then(({data}) => setData(data.data));
+
     return (
         <Page 
             pageTitle={'Listagem categorias'}
             boxDirection={'rtl'}
+            data = {data}
             fab={fab}
-            table={table}
+            tableTitle={'Listagem categorias'}
+            columnsDefinition={columnsDefinition}
         />
     );
 }

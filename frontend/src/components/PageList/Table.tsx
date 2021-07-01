@@ -1,29 +1,19 @@
 // @flow 
 import MUIDataTable, { MUIDataTableColumn } from 'mui-datatables';
-import React, {useEffect, useState} from 'react';
-import { httpVideo } from '../../utils/http';
+import React from 'react';
 
 interface TableProps {
     title: string;
-    route: string;
+    data?: any;
     columnsDefinition: MUIDataTableColumn[];
 }
-
 const Table: React.FC<TableProps> = (props) => {
-
-    const [data, setData] = useState([]);
-
-    useEffect(() => {
-        httpVideo.get(props.route).then(
-            response => setData(response.data.data)
-        )
-    }, []);
 
     return (
         <MUIDataTable
             title={props.title}
             columns={props.columnsDefinition}
-            data={data}
+            data={props.data}
         />
     );
 };
