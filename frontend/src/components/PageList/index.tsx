@@ -9,10 +9,11 @@ import Table from './Table';
 const PageList: React.FC<PageListProps> = (props) => {
     return (
         <Page title={props.pageTitle}>
-            <Box dir={props.boxDirection}>
+            <Box dir={props.boxDirection} paddingBottom={2}>
                 <Fab
                     title={props.fab.title}
                     size={props.fab.size}
+                    color="secondary"
                     component={props.fab.component}
                     to={props.fab.to}
                 >

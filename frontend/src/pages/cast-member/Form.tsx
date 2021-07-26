@@ -1,13 +1,8 @@
 // @flow 
 import { makeStyles, ButtonProps, Theme, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Box, Button } from '@material-ui/core';
-import React, { useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import React, { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 import castMemberHttp from '../../utils/http/cast-member-http';
-
-const castMemberTypeMap = {
-    'director': 1,
-    'actor': 2
-}
 
 const useStyles = makeStyles((theme: Theme) => {
     return {
@@ -23,22 +18,19 @@ const Form = () => {
 
     const buttonProps: ButtonProps = {
         className: classes.submit,
-        variant: 'outlined',
+        color: 'secondary',
+        variant: 'contained',
     };
 
-    const {register, getValues, handleSubmit, control} = useForm({
-        defaultValues: {
-            type: 'director'
-        }
-    });
+    const {register, getValues, handleSubmit, setValue} = useForm();
+    useEffect(() => {
+        register({name: 'type'})
+    }, [register]);
 
-    const [type, setType] = useState("director");
-
-    const onSubmit = (formData) => {
-        const data = {...formData};
-        data['type'] = castMemberTypeMap[type];
+    const onSubmit = (formData, event) => {
+        console.log(formData);
         castMemberHttp
-            .create(data)
+            .create(formData)
             .then((response) => console.log(response));
     }
 
@@ -52,35 +44,20 @@ const Form = () => {
                 inputRef={register}
             />
             <FormControl component="fieldset">
-                <FormLabel component="legend">Tipo</FormLabel>
-                <Controller 
-                    name="type-controller"
-                    rules={{ required: true }}
-                    control={control}
-                    onChange={(e) => {setType(e[1])}}
-                    valueName="type"
-                    as={
-                        <RadioGroup
-                            aria-label="tipo"
-                            value={type}
-                            defaultValue="director"
-                        >
-                            <FormControlLabel 
-                                value={'director'} 
-                                control={<Radio />} 
-                                label="Diretor"
-                            />
-                            <FormControlLabel 
-                                value={'actor'} 
-                                control={<Radio />} 
-                                label="Ator"
-                            />
-                        </RadioGroup>
-                    }
-                />
+                <FormLabel style={{paddingTop: 16}} component="legend">Tipo</FormLabel>
+                <RadioGroup
+                    name="type"
+                    aria-label="tipo"
+                    onChange={(e) => {
+                        setValue('type', parseInt(e.target.value))
+                    }}
+                >
+                    <FormControlLabel value="1" control={<Radio color="primary" />} label="Diretor" />
+                    <FormControlLabel value="2" control={<Radio color="primary" />} label="Ator" />
+                </RadioGroup>
             </FormControl>
             <Box dir={'rtl'}>
-                <Button {...buttonProps} onClick={() => onSubmit(getValues())}>Salvar</Button>
+                <Button {...buttonProps} onClick={() => onSubmit(getValues(), null)}>Salvar</Button>
                 <Button {...buttonProps} type={'submit'}>Salvar e continuar editando</Button>
             </Box>
         </form>
