@@ -7,41 +7,12 @@ import { Link } from 'react-router-dom';
 // import Table from './Table';
 import Page from '../../components/PageList';
 import { FabProps } from '../../components/PageList/PageList.interface';
-import MuiChip from '../../components/Chip';
+import { BadgeYes, BadgeNo } from '../../components/Navbar/Badge';
 import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
-import { PropTypes } from '@material-ui/core';
 import categoryHttp from '../../utils/http/category-http';
 import { MUIDataTableColumn } from 'mui-datatables';
 import Category from './category-interface';
-
-type MuiChipPropsType = {
-    label: string;
-    color: Exclude<PropTypes.Color, 'inherit'>
-}
-
-type IsActiveValue = {
-    [key: string]: MuiChipPropsType
-}
-
-const typeValue: IsActiveValue = {
-    'true': {
-        label: 'Sim',
-        color: 'primary'
-    }, 
-    'false': {
-        label: 'Não',
-        color: 'secondary'
-    }, 
-}
-
-const renderChip = (value: string) => {
-    const props = typeValue[value];
-    return <MuiChip 
-        label={props.label} 
-        color={props.color}
-    />
-    }
 
 const fab: FabProps = {
     title: 'Adicionar categoria',
@@ -59,7 +30,7 @@ const columnsDefinition: MUIDataTableColumn[] = [
         label: "Ativo?",
         options: {
             customBodyRender(value, tableMeta, updateValue) {
-                return renderChip(String(value));
+                return value ? <BadgeYes /> : <BadgeNo />;
             }
         }
     },

@@ -1,105 +1,118 @@
 // @flow 
-import { Box, Button, ButtonProps, Checkbox, Chip, FormControl, Input, InputLabel, makeStyles, MenuItem, Select, TextField, Theme, useTheme } from '@material-ui/core';
-import React, { useState } from 'react';
-import { useEffect } from 'react';
+import { Box, Button, ButtonProps, makeStyles, MenuItem, TextField, Theme } from '@material-ui/core';
+import { useSnackbar } from 'notistack';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useHistory, useParams } from 'react-router';
 import categoryHttp from '../../utils/http/category-http';
 import genreHttp from '../../utils/http/genre-http';
+import * as yup from '../../utils/vendor/yup';
+
+type GenreId = {
+    id: string
+}
 
 const useStyles = makeStyles((theme: Theme) => {
     return {
-        formControl: {
-            margin: theme.spacing(1),
-            minWidth: 120,
-            maxWidth: 300,
-        },
         submit: {
             margin: theme.spacing(1)
-        },
-        chips: {
-            display: 'flex',
-            flexWrap: 'wrap',
-        },
-        chip: {
-            margin: 2,
-        },
-        noLabel: {
-            marginTop: theme.spacing(3),
-        },
-    };
+        }
+    }
 });
 
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-    PaperProps: {
-        style: {
-        maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-        width: 250,
-        },
-    },
-};
-
-type Category = {
-    id: string,
-    name: string,
-    description: string | null,
-    is_active: boolean,
-    deleted_at: string | null,
-    created_at: string,
-    updated_at: string
-};
-
+const validationSchema = yup.object().shape({
+    name: yup.string()
+            .label('Nome')
+            .required()
+            .max(255),
+    categories_id: yup.array()
+                    .label('Categorias')
+                    .required()
+})
 
 const Form = () => {
     const classes = useStyles();
-    const theme = useTheme();
 
     const buttonProps: ButtonProps = {
         className: classes.submit,
-        variant: 'outlined',
+        color: 'secondary',
+        variant: 'contained',
     };
-
-    const getStyles = (categoryId: string, categories: Category[], theme: Theme) => {
-        return {
-            fontWeight:
-                categories.some((category) => category.id === categoryId)
-                ? theme.typography.fontWeightRegular
-                : theme.typography.fontWeightMedium
-        };
-    }
-
-    const [categoriesId, setCategoriesId] = useState<string[]>([]);
-    const [categories, setCategories] = useState<Category[]>([])
-
-    useEffect(() => {
-        categoryHttp
-            .list()
-            .then(({data}) => {
-                setCategories(data.data)
-            }).catch(err => {
-                console.error(err);
-            });
-    }, [categories]);
     
-    const {register, watch, getValues, handleSubmit} = useForm({
+    const snackbar = useSnackbar();
+    const history = useHistory();
+    const [categories, setCategories] = useState<any[]>([])
+    const [genre, setGenre] = useState<GenreId | null>(null);
+    const {id}:GenreId = useParams();
+    const [loading, setLoading] = useState<boolean>(false)
+    const {register, watch, getValues, handleSubmit, setValue, errors, reset} = useForm<{name, categories_id}>({
+        validationSchema,
         defaultValues: {
-            is_active: true
+            categories_id: []
         }
     });
 
-    const watchCategoriesId = watch('categoriesId', categoriesId);
+    useEffect(() => {
+        register({name: 'categories_id'})
+    }, [register])
 
-    const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-        setCategoriesId(event.target.value as string[]);
-    };
+    useEffect(() => {
+        setLoading(true)
+        categoryHttp
+            .list()
+            .then(({data}) => setCategories(data.data))
+            .finally(() => setLoading(false))
+    }, []);
 
-    const onSubmit = (formData) => {
-        const data = {...formData};
-        data['categories_id'] = watchCategoriesId;
+    useEffect(() => {
+        if (!id) {
+            return;
+        }
+        setLoading(true);
         genreHttp
-            .create(data)
-            .then((response) => console.log(response.data));
+            .get(id)
+            .then(({data}) => {
+                console.log(data.data);
+                setGenre(data.data);
+                const categories_id = data.data.categories.map(category => category.id);
+                reset({...data.data, categories_id})
+            })
+            .finally(() => setLoading(false));
+    }, [id, reset]);
+
+    const onSubmit = (formData, event) => {
+        setLoading(true)
+        const http = !genre
+            ? genreHttp.create(formData)
+            : genreHttp.update(genre.id, formData)
+        http
+            .then(({data}) => {
+                snackbar.enqueueSnackbar(
+                    'Gênero salvo com sucesso',
+                    {
+                        variant: 'success'
+                    }
+                );
+                setTimeout(() => {
+                    event
+                        ? (
+                            id
+                                ? history.replace(`/genres/${data.data.id}/edit`)
+                                : history.push(`/genres/${data.data.id}/edit`)
+                        )
+                        : history.push('/genres')
+                })
+            })
+            .catch((error) => {
+                console.error(error);
+                snackbar.enqueueSnackbar(
+                    'Erro ao salvar gênero',
+                    {
+                        variant: 'error'
+                    }
+                )
+            })
+            .finally(() => setLoading(false));
     };
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -109,53 +122,44 @@ const Form = () => {
                 fullWidth
                 variant={'outlined'}
                 inputRef={register}
+                disabled={loading}
+                error={errors.name !== undefined}
+                helperText={errors.name && errors.name.message}
+                InputLabelProps={{shrink: true}}
             />
-            <FormControl className={classes.formControl}>
-                <InputLabel id="categories-label">Categorias</InputLabel>
-                {watchCategoriesId && <Select
-                    labelId="categories-label"
-                    id="categories"
-                    multiple
-                    value={categoriesId}
-                    onChange={handleChange}
-                    input={<Input />}
-                    renderValue={(selected) => (
-                        <div className={classes.chips}>
-                            {(selected as string[]).map((value) => {
-                                const category = categories.find(category => category.id === value);
-                                if (category) {
-                                    return <Chip 
-                                        key={value} 
-                                        label={category.name} 
-                                        className={classes.chip}
-                                    />
-                                }                                
-                            })}
-                        </div>
-                    )}
-                    MenuProps={MenuProps}
-                >
-                    {categories.map((category) => (
+            <TextField 
+                select
+                name="categories_id"
+                value={watch('categories_id')}
+                label="Categorias"
+                margin={'normal'}
+                variant={'outlined'}
+                fullWidth
+                onChange={(e) => {
+                    setValue('categories_id', e.target.value as any);
+                }}
+                SelectProps={{
+                    multiple: true
+                }}
+                disabled={loading}
+                error={errors.categories_id !== undefined}
+                helperText={errors.categories_id && errors.categories_id.message}
+                InputLabelProps={{shrink: true}}
+            >
+                <MenuItem value="" disabled>
+                    <em>Selecione categorias</em>
+                </MenuItem>
+                {categories.map((category, key) => (
                         <MenuItem 
-                            key={category.id} 
+                            key={key} 
                             value={category.id}
-                            style={getStyles(category.id, categories, theme)}
                         >
                             {category.name}
                         </MenuItem>
                     ))}
-                </Select>}
-            </FormControl>
-            <Box dir={'ltr'}>
-                <Checkbox
-                    name={'is_active'}
-                    inputRef={register}
-                    defaultChecked
-                />
-                Ativo?
-            </Box>
+            </TextField>
             <Box dir={'rtl'}>
-                <Button {...buttonProps} onClick={() => onSubmit(getValues())}>Salvar</Button>
+                <Button {...buttonProps} onClick={() => onSubmit(getValues(), null)}>Salvar</Button>
                 <Button {...buttonProps} type={'submit'}>Salvar e continuar editando</Button>
             </Box>
         </form>

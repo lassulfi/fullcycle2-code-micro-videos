@@ -1,6 +1,6 @@
 import { RouteProps } from "react-router-dom";
 import CategoryList from "../pages/category/PageList";
-import CategoryCreate from '../pages/category/PageForm';
+import CategoryForm from '../pages/category/PageForm';
 import CastMemberList from '../pages/cast-member/PageList';
 import CastMemberForm from '../pages/cast-member/PageForm';
 import GenreList from '../pages/genre/PageList';
@@ -27,9 +27,15 @@ const routes: MyRouteProps[] = [
         exact: true
     }, {
         name: 'categories.create',
-        label: 'Criar categorias',
+        label: 'Criar categoria',
         path: '/categories/create',
-        component: CategoryCreate,
+        component: CategoryForm,
+        exact: true
+    }, {
+        name: 'categories.edit',
+        label: 'Editar categoria',
+        path: '/categories/:id/edit',
+        component: CategoryForm,
         exact: true
     }, {
         name: 'cast_members.list',
@@ -44,6 +50,12 @@ const routes: MyRouteProps[] = [
         component: CastMemberForm,
         exact: true
     }, {
+        name: 'cast_members.edit',
+        label: 'Editar Membro do Elenco',
+        path: '/cast-members/:id/edit',
+        component: CastMemberForm,
+        exact: true
+    }, {
         name: 'genres.list',
         label: 'Listar Gêneros',
         path: '/genres',
@@ -53,6 +65,12 @@ const routes: MyRouteProps[] = [
         name: 'genres.create',
         label: 'Criar Gênero',
         path: '/genres/create',
+        component: GenreForm,
+        exact: true
+    }, {
+        name: 'genres.edit',
+        label: 'Editar Gênero',
+        path: '/genres/:id/edit',
         component: GenreForm,
         exact: true
     }
