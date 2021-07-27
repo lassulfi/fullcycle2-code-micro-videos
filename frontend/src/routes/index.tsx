@@ -50,6 +50,12 @@ const routes: MyRouteProps[] = [
         component: CastMemberForm,
         exact: true
     }, {
+        name: 'cast_members.edit',
+        label: 'Editar Membro do Elenco',
+        path: '/cast-members/:id/edit',
+        component: CastMemberForm,
+        exact: true
+    }, {
         name: 'genres.list',
         label: 'Listar Gêneros',
         path: '/genres',
@@ -59,6 +65,12 @@ const routes: MyRouteProps[] = [
         name: 'genres.create',
         label: 'Criar Gênero',
         path: '/genres/create',
+        component: GenreForm,
+        exact: true
+    }, {
+        name: 'genres.edit',
+        label: 'Editar Gênero',
+        path: '/genres/:id/edit',
         component: GenreForm,
         exact: true
     }

@@ -1,9 +1,16 @@
 // @flow 
 import { Box, Button, ButtonProps, makeStyles, MenuItem, TextField, Theme } from '@material-ui/core';
+import { useSnackbar } from 'notistack';
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useHistory, useParams } from 'react-router';
 import categoryHttp from '../../utils/http/category-http';
 import genreHttp from '../../utils/http/genre-http';
+import * as yup from '../../utils/vendor/yup';
+
+type GenreId = {
+    id: string
+}
 
 const useStyles = makeStyles((theme: Theme) => {
     return {
@@ -12,6 +19,16 @@ const useStyles = makeStyles((theme: Theme) => {
         }
     }
 });
+
+const validationSchema = yup.object().shape({
+    name: yup.string()
+            .label('Nome')
+            .required()
+            .max(255),
+    categories_id: yup.array()
+                    .label('Categorias')
+                    .required()
+})
 
 const Form = () => {
     const classes = useStyles();
@@ -22,8 +39,14 @@ const Form = () => {
         variant: 'contained',
     };
     
+    const snackbar = useSnackbar();
+    const history = useHistory();
     const [categories, setCategories] = useState<any[]>([])
-    const {register, watch, getValues, handleSubmit, setValue} = useForm({
+    const [genre, setGenre] = useState<GenreId | null>(null);
+    const {id}:GenreId = useParams();
+    const [loading, setLoading] = useState<boolean>(false)
+    const {register, watch, getValues, handleSubmit, setValue, errors, reset} = useForm<{name, categories_id}>({
+        validationSchema,
         defaultValues: {
             categories_id: []
         }
@@ -34,15 +57,62 @@ const Form = () => {
     }, [register])
 
     useEffect(() => {
+        setLoading(true)
         categoryHttp
             .list()
             .then(({data}) => setCategories(data.data))
+            .finally(() => setLoading(false))
     }, []);
 
-    const onSubmit = (formData, event) => {
+    useEffect(() => {
+        if (!id) {
+            return;
+        }
+        setLoading(true);
         genreHttp
-            .create(formData)
-            .then((response) => console.log(response.data));
+            .get(id)
+            .then(({data}) => {
+                console.log(data.data);
+                setGenre(data.data);
+                const categories_id = data.data.categories.map(category => category.id);
+                reset({...data.data, categories_id})
+            })
+            .finally(() => setLoading(false));
+    }, [id, reset]);
+
+    const onSubmit = (formData, event) => {
+        setLoading(true)
+        const http = !genre
+            ? genreHttp.create(formData)
+            : genreHttp.update(genre.id, formData)
+        http
+            .then(({data}) => {
+                snackbar.enqueueSnackbar(
+                    'Gênero salvo com sucesso',
+                    {
+                        variant: 'success'
+                    }
+                );
+                setTimeout(() => {
+                    event
+                        ? (
+                            id
+                                ? history.replace(`/genres/${data.data.id}/edit`)
+                                : history.push(`/genres/${data.data.id}/edit`)
+                        )
+                        : history.push('/genres')
+                })
+            })
+            .catch((error) => {
+                console.error(error);
+                snackbar.enqueueSnackbar(
+                    'Erro ao salvar gênero',
+                    {
+                        variant: 'error'
+                    }
+                )
+            })
+            .finally(() => setLoading(false));
     };
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -52,6 +122,10 @@ const Form = () => {
                 fullWidth
                 variant={'outlined'}
                 inputRef={register}
+                disabled={loading}
+                error={errors.name !== undefined}
+                helperText={errors.name && errors.name.message}
+                InputLabelProps={{shrink: true}}
             />
             <TextField 
                 select
@@ -67,6 +141,10 @@ const Form = () => {
                 SelectProps={{
                     multiple: true
                 }}
+                disabled={loading}
+                error={errors.categories_id !== undefined}
+                helperText={errors.categories_id && errors.categories_id.message}
+                InputLabelProps={{shrink: true}}
             >
                 <MenuItem value="" disabled>
                     <em>Selecione categorias</em>
