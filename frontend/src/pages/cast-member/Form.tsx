@@ -1,29 +1,18 @@
 // @flow 
-import { makeStyles, ButtonProps, Theme, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Box, Button, FormHelperText } from '@material-ui/core';
-import { watch } from 'fs';
+import { TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, FormHelperText } from '@material-ui/core';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory, useParams } from 'react-router';
+import DefaultForm from '../../components/DefaultForm';
+import SubmitActions from '../../components/SubmitActions';
 import castMemberHttp from '../../utils/http/cast-member-http';
+import { CastMember } from '../../utils/models';
 import * as yup from '../../utils/vendor/yup';
-
-type FormData = {
-    name: string,
-    type: number,
-}
 
 type CastMemberId = {
     id: string
 }
-
-const useStyles = makeStyles((theme: Theme) => {
-    return {
-        submit: {
-            margin: theme.spacing(1)
-        }
-    };
-});
 
 const validationSchema = yup.object().shape({
     name: yup.string()
@@ -31,28 +20,28 @@ const validationSchema = yup.object().shape({
             .required()
             .max(255),
     type: yup.number()
-            .label('tipo')
+            .label('Tipo')
             .required()
 });
 
 const Form = () => {
+    const {register, 
+        getValues, 
+        handleSubmit, 
+        setValue, 
+        errors, 
+        reset, 
+        watch, 
+        triggerValidation} = useForm<{name, type}>({
+        validationSchema
+    });
     
-    const classes = useStyles();
-
-    const buttonProps: ButtonProps = {
-        className: classes.submit,
-        color: 'secondary',
-        variant: 'contained',
-    };
     const snackbar = useSnackbar();
     const history = useHistory();
     const {id}: CastMemberId = useParams();
-    const [castMember, setCastMember] = useState<CastMemberId | null>(null)
+    const [castMember, setCastMember] = useState<CastMember | null>(null)
     const [loading, setLoading] = useState<boolean>(false);
-
-    const {register, getValues, handleSubmit, setValue, errors, reset, watch} = useForm<FormData>({
-        validationSchema
-    });
+    
     useEffect(() => {
         register({name: 'type'})
     }, [register]);
@@ -61,54 +50,70 @@ const Form = () => {
         if (!id) {
             return;
         }
-        setLoading(true);
-        castMemberHttp
-            .get(id)
-            .then(({data}) => {
-                setCastMember(data.data);
-                reset(data.data);
-            })
-            .finally(() => setLoading(false));
+        let isSubscribed = true;
+        (async () => {
+            setLoading(true);
+            try {
+                const {data} = await castMemberHttp.get<{data: CastMember}>(id);
+                if (isSubscribed) {
+                    setCastMember(data.data);
+                    reset(data.data);
+                }
+            } catch (error) {
+                console.error(error);
+                snackbar.enqueueSnackbar(
+                    'Não foi possível carregar as informações',
+                    {
+                        variant: 'error',
+                    }
+                )
+            } finally {
+                setLoading(false);
+            }
+        })();
 
+        return () => {
+            isSubscribed = false;
+        }
     }, [])
 
-    const onSubmit = (formData, event) => {
+    async function onSubmit (formData, event) {
         setLoading(true);
-        const http = !castMember
+        try {
+            const http = !castMember
             ? castMemberHttp.create(formData)
             : castMemberHttp.update(castMember.id, formData);
-        http
-            .then(({data}) => {
-                snackbar.enqueueSnackbar(
-                    'Membro de elenco salvo com sucesso',
-                    {
-                        variant: 'success'
-                    }
-                );
-                setTimeout(() => {
-                    event 
-                        ? (
-                            id 
-                                ? history.replace(`/cast-members/${data.data.id}/edit`)
-                                : history.push(`/cast-members/${data.data.id}/edit`)
-                        ) 
-                        : history.push('/cast-members')
-                })
-            })
-            .catch((error) => {
-                console.error(error);
+            const {data} = await http;
+            snackbar.enqueueSnackbar(
+                'Membro de elenco salvo com sucesso',
+                {
+                    variant: 'success',
+                }
+            );
+            setTimeout(() => {
+                event 
+                    ? (
+                        id 
+                            ? history.replace(`/cast-members/${data.data.id}/edit`)
+                            : history.push(`/cast-members/${data.data.id}/edit`)
+                    ) 
+                    : history.push('/cast-members')
+            });
+        } catch (error) {
+            console.error(error);
                 snackbar.enqueueSnackbar(
                     'Erro ao salvar membro de elenco',
                     {
                         variant: 'error'
                     }
-                )
-            })
-            .finally(() => setLoading(false))
+                );
+        } finally {
+            setLoading(false);
+        }
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <DefaultForm GridItemProps={{xs: 12, md: 6}} onSubmit={handleSubmit(onSubmit)}>
             <TextField 
                 name="name"
                 label="Nome"
@@ -142,11 +147,13 @@ const Form = () => {
                     errors.type && <FormHelperText id="type-helper-text">{errors.type.message}</FormHelperText>
                 }
             </FormControl>
-            <Box dir={'rtl'}>
-                <Button {...buttonProps} onClick={() => onSubmit(getValues(), null)}>Salvar</Button>
-                <Button {...buttonProps} type={'submit'}>Salvar e continuar editando</Button>
-            </Box>
-        </form>
+            <SubmitActions 
+                disabledButtons={loading} 
+                handleSave={() => triggerValidation().then(isValid => {
+                    isValid && onSubmit(getValues(), null)
+                })}
+            />
+        </DefaultForm>
     );
 };
 

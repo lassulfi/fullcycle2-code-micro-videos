@@ -12,7 +12,8 @@ import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
 import categoryHttp from '../../utils/http/category-http';
 import { MUIDataTableColumn } from 'mui-datatables';
-import Category from './category-interface';
+import { Category, ListResponse } from '../../utils/models';
+import { useEffect } from 'react';
 
 const fab: FabProps = {
     title: 'Adicionar categoria',
@@ -48,9 +49,17 @@ const columnsDefinition: MUIDataTableColumn[] = [
 const PageList = () => {
     const [data, setData] = useState<Category[]>([]);
     
-    categoryHttp
-        .list<{ data: Category[] }>()
-        .then(({data}) => setData(data.data));
+    useEffect(() => {
+        let isSubscribed = true;
+        (async () => {
+            const {data} = await categoryHttp.list<ListResponse<Category>>();
+            if (isSubscribed) setData(data.data);
+        })();
+
+        return () => {
+            isSubscribed = false;
+        }
+    })
 
     return (
         <Page 

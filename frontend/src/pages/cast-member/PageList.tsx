@@ -1,5 +1,5 @@
 // @flow 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Page from '../../components/PageList';
 import { FabProps } from '../../components/PageList/PageList.interface';
@@ -7,6 +7,7 @@ import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
 import { MUIDataTableColumn } from 'mui-datatables';
 import castMemberHttp from '../../utils/http/cast-member-http';
+import { CastMember, ListResponse } from '../../utils/models';
 
 const castMemberTypeMap = {
     0: 'Diretor',
@@ -44,18 +45,24 @@ const columnsDefinition: MUIDataTableColumn[] = [
     }
 ];
 
-interface CastMember {
-    id: string, 
-    name: string,
-    type: number
-}
-
 const PageList = () => {
     const [data, setData] = useState<CastMember[]>([]);
 
-    castMemberHttp
-        .list<{ data: CastMember[] }>()
-        .then(({data}) => setData(data.data))
+    useEffect(() => {
+        let isSubscribed = true;
+        (async () => {
+            try {
+                const {data} = await castMemberHttp.list<ListResponse<CastMember>>();
+                if (isSubscribed) setData(data.data);
+            } catch (error) {
+                console.error(error);
+            }
+        })();
+
+        return () => {
+            isSubscribed = false;
+        }
+    }, [])
 
     return (
         <Page 

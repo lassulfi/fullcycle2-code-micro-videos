@@ -1,5 +1,5 @@
 // @flow 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Chip } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Page from '../../components/PageList';
@@ -8,7 +8,7 @@ import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
 import { MUIDataTableColumn } from 'mui-datatables';
 import genreHttp from '../../utils/http/genre-http';
-import Genre from './genre-interface';
+import { Genre, ListResponse } from '../../utils/models';
 
 const fab: FabProps = {
     title: 'Adicionar gênero',
@@ -52,10 +52,21 @@ const columnsDefinition: MUIDataTableColumn[] = [
 const PageList = () => {
     const [data, setData] = useState<Genre[]>([]);
 
-    genreHttp
-        .list<{ data: Genre[] }>()
-        .then(({data}) => setData(data.data));
-    
+    useEffect(() => {
+        let isSubscribed = true;
+        (async () => {
+            try {
+                const {data} = await genreHttp.list<ListResponse<Genre>>();
+                if (isSubscribed) setData(data.data);
+            } catch (error) {
+                console.error(error);
+            }
+        })();    
+
+        return () => {
+            isSubscribed = false;
+        }
+    }, [])
 
     return (
         <Page 

@@ -2,9 +2,10 @@
 import { Chip } from '@material-ui/core';
 import MUIDataTable, { MUIDataTableColumn } from 'mui-datatables';
 import React, {useEffect, useState} from 'react';
-import { httpVideo } from '../../utils/http';
 import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
+import categoryHttp from '../../utils/http/category-http';
+import { Category, ListResponse } from '../../utils/models';
 
 const columnsDefinition: MUIDataTableColumn[] = [
     {
@@ -33,12 +34,22 @@ const columnsDefinition: MUIDataTableColumn[] = [
 type Props = {};
 const Table = (props: Props) => {
 
-    const [data, setData] = useState([]);
+    const [data, setData] = useState<Category[]>([]);
 
     useEffect(() => {
-        httpVideo.get('categories').then(
-            response => setData(response.data.data)
-        )
+        let isSubscribed = true;
+        (async () => {
+            try {
+                const {data} = await categoryHttp.list<ListResponse<Category>>();
+                if (isSubscribed) setData(data.data);
+            } catch (error) {
+                console.error(error);
+            }
+        })();
+
+        return () => {
+            isSubscribed = false;
+        }
     }, []);
 
     return (
