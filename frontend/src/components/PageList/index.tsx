@@ -3,10 +3,31 @@ import * as React from 'react';
 import { Box, Fab } from '@material-ui/core';
 import { Page } from '../Page';
 import AddIcon from '@material-ui/icons/Add';
-import { PageListProps } from './PageList.interface';
-import Table from './Table';
+import Table from '../Table';
+import { MUIDataTableColumn } from 'mui-datatables';
+
+export interface FabProps {
+    title: string;
+    size?: "small" | "medium" | "large";
+    component: React.ElementType;
+    to: string;
+}
+
+interface PageListProps<T = any> {
+    pageTitle: string;
+    boxDirection: string;
+    data: T;
+    fab: FabProps;
+    tableTitle: string;
+    columnsDefinition: MUIDataTableColumn[];
+    loading?: boolean,
+}
 
 const PageList: React.FC<PageListProps> = (props) => {
+    const isLoading = (): boolean => props.loading 
+        ? props.loading
+        : false
+
     return (
         <Page title={props.pageTitle}>
             <Box dir={props.boxDirection} paddingBottom={2}>
@@ -24,7 +45,9 @@ const PageList: React.FC<PageListProps> = (props) => {
                 <Table 
                     title={props.tableTitle}
                     data={props.data}
-                    columnsDefinition={props.columnsDefinition}
+                    columns={props.columnsDefinition}
+                    loading={isLoading()}
+                    options={{responsive: 'scrollMaxHeight'}}
                 />
             </Box>
         </Page>
