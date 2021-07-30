@@ -21,7 +21,7 @@ use Tests\Traits\TestValidations;
 class BasicCrudControllerTest extends TestCase
 {
     private $controller;
-    
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -40,7 +40,16 @@ class BasicCrudControllerTest extends TestCase
     {
         /** @var CategoryStub $category */
         $category = CategoryStub::create(['name' => 'test_name', 'description' => 'test_description']);
-        $result = $this->controller->index();
+        $request = \Mockery::mock(Request::class);
+        $request
+            ->shouldReceive('get')
+            ->once()
+            ->andReturn([]);
+        $request
+            ->shouldReceive('has')
+            ->once()
+            ->andReturn(false);
+        $result = $this->controller->index($request);
         $serialized = $result->response()->getData(true);
         $this->assertEquals([$category->toArray()], $serialized['data']);
         $this->assertArrayHasKey('meta', $serialized);
@@ -74,7 +83,7 @@ class BasicCrudControllerTest extends TestCase
     public function testIfFindOrFailFetchModel()
     {
         $category = CategoryStub::create(['name' => 'test_name', 'description' => 'test_description']);
-        
+
         $reflectionClass = new \ReflectionClass(BasicCrudController::class);
         $reflectionMethod = $reflectionClass->getMethod('findOrFail');
         $reflectionMethod->setAccessible(true);
@@ -86,7 +95,7 @@ class BasicCrudControllerTest extends TestCase
     public function testIfFindOrFailWhenIdIsInvalid()
     {
         $this->expectException(ModelNotFoundException::class);
-        
+
         $reflectionClass = new \ReflectionClass(BasicCrudController::class);
         $reflectionMethod = $reflectionClass->getMethod('findOrFail');
         $reflectionMethod->setAccessible(true);
@@ -120,7 +129,7 @@ class BasicCrudControllerTest extends TestCase
             ->once()
             ->andReturn(['name' => '']);
         $this->controller->update($request, $category->id);
-    } 
+    }
 
     public function testUpdate()
     {
@@ -140,7 +149,7 @@ class BasicCrudControllerTest extends TestCase
     public function testUpdateWhenIdIsInvalid()
     {
         $this->expectException(ModelNotFoundException::class);
-    
+
         $request = \Mockery::mock(Request::class);
         $request
             ->shouldReceive('all')

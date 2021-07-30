@@ -1,9 +1,9 @@
 // @flow 
 import * as React from 'react';
-import { Box, Fab } from '@material-ui/core';
+import { Box, Fab, MuiThemeProvider } from '@material-ui/core';
 import { Page } from '../Page';
 import AddIcon from '@material-ui/icons/Add';
-import Table from '../Table';
+import Table, { makeActionStyles } from '../Table';
 import { MUIDataTableColumn } from 'mui-datatables';
 
 export interface FabProps {
@@ -42,13 +42,15 @@ const PageList: React.FC<PageListProps> = (props) => {
                 </Fab>
             </Box>
             <Box>
-                <Table 
-                    title={props.tableTitle}
-                    data={props.data}
-                    columns={props.columnsDefinition}
-                    loading={isLoading()}
-                    options={{responsive: 'scrollMaxHeight'}}
-                />
+                <MuiThemeProvider theme={makeActionStyles(props.columnsDefinition.length - 1)}>
+                    <Table 
+                        title={props.tableTitle}
+                        data={props.data}
+                        columns={props.columnsDefinition}
+                        loading={isLoading()}
+                        options={{responsive: 'scrollMaxHeight'}}
+                    />
+                </MuiThemeProvider>
             </Box>
         </Page>
     );

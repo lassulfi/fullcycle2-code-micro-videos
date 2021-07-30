@@ -10,6 +10,9 @@ import { Category, ListResponse } from '../../utils/models';
 import { useEffect } from 'react';
 import { TableColumn } from '../../components/Table';
 import { useSnackbar } from 'notistack';
+import { IconButton } from '@material-ui/core';
+import EditIcon from '@material-ui/icons/Edit';
+import { MUIDataTableMeta } from 'mui-datatables';
 
 const fab: FabProps = {
     title: 'Adicionar categoria',
@@ -52,7 +55,21 @@ const columnsDefinition: TableColumn[] = [
     }, {
         name: 'actions',
         label: 'Ações',
-        width: '13%'
+        width: '13%', 
+        options: {
+            sort: false,
+            customBodyRender: (value, tableMeta: MUIDataTableMeta) => {
+                return (
+                    <IconButton
+                        color="secondary"
+                        component={Link}
+                        to={`/categories/${tableMeta.rowData[0]}/edit`}
+                    >
+                        <EditIcon/>
+                    </IconButton>
+                )
+            }
+        }
     }
 ];
 
