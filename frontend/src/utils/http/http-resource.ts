@@ -6,12 +6,12 @@ export default class HttpResource {
 
     }
 
-    list<T = any>(): Promise<AxiosResponse<T>>  {
-        const config: AxiosRequestConfig = {
-            params: {
-                all: ''
-            }
-        }; 
+    list<T = any>(options?: { queryParams? }): Promise<AxiosResponse<T>>  {
+        const config: AxiosRequestConfig = {}; 
+        if (options && options.queryParams) {
+            config.params = options.queryParams;
+        }
+
         return this.http.get<T>(this.resource, config);
     }
 

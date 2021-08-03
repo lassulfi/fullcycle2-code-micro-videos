@@ -1,7 +1,7 @@
 // @flow 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Page, { FabProps } from '../../components/PageList';
+import Page, { FabProps, SearchState } from '../../components/PageList';
 import { BadgeYes, BadgeNo } from '../../components/Navbar/Badge';
 import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
@@ -75,16 +75,50 @@ const columnsDefinition: TableColumn[] = [
 
 const PageList = () => {
     const snackbar = useSnackbar();
+    const subscribed = useRef(true);
     const [data, setData] = useState<Category[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
+    const [searchState, setSearchState] = useState<SearchState>({
+        search: '', 
+        pagination: {
+            page: 1,
+            total: 0,
+            per_page: 10,
+        }
+    });
     
     useEffect(() => {
-        let isSubscribed = true;
-        (async () => {
-            setLoading(true);
+        subscribed.current = true;
+        getData();
+        return () => {
+            subscribed.current = false;
+        }
+    }, [
+        searchState.search,
+        searchState.pagination.page,
+        searchState.pagination.per_page
+    ]);
+
+    async function getData() {
+        setLoading(true);
             try {
-                const {data} = await categoryHttp.list<ListResponse<Category>>();
-                if (isSubscribed) setData(data.data);
+                const {data} = await categoryHttp.list<ListResponse<Category>>({
+                    queryParams: {
+                        search: searchState.search,
+                        page: searchState.pagination.page,
+                        per_page: searchState.pagination.per_page,
+                    }
+                });
+                if (subscribed.current) {
+                    setData(data.data);
+                    setSearchState(prevState => ({
+                        ...prevState,
+                        pagination: {
+                            ...prevState.pagination,
+                            total: data.meta.total
+                        }
+                    }))
+                }
             } catch (error) {
                 console.error(error);
                 snackbar.enqueueSnackbar(
@@ -96,12 +130,7 @@ const PageList = () => {
             } finally {
                 setLoading(false);
             }
-        })();
-
-        return () => {
-            isSubscribed = false;
-        }
-    }, [])
+    }
 
     return (
         <Page 
@@ -112,6 +141,10 @@ const PageList = () => {
             tableTitle={'Listagem categorias'}
             columnsDefinition={columnsDefinition}
             loading={loading}
+            searchStateProps={{
+                searchState,
+                setSearchState
+            }}
         />
     );
 }
