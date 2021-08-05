@@ -74,17 +74,34 @@ const columnsDefinition: TableColumn[] = [
 ];
 
 const PageList = () => {
-    const snackbar = useSnackbar();
-    const subscribed = useRef(true);
-    const [data, setData] = useState<Category[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [searchState, setSearchState] = useState<SearchState>({
+    const initialState = {
         search: '', 
         pagination: {
             page: 1,
             total: 0,
             per_page: 10,
+        },
+        order: {
+            sort: null,
+            dir: null,
         }
+    };
+    const snackbar = useSnackbar();
+    const subscribed = useRef(true);
+    const [data, setData] = useState<Category[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [searchState, setSearchState] = useState<SearchState>(initialState);
+
+    const columns = columnsDefinition.map(column => {
+        return column.name === searchState.order.sort 
+        ? {
+            ...column,
+            options: {
+                ...column.options,
+                sortDirection: searchState.order.dir as any
+            }
+        } 
+        : column;
     });
     
     useEffect(() => {
@@ -96,7 +113,8 @@ const PageList = () => {
     }, [
         searchState.search,
         searchState.pagination.page,
-        searchState.pagination.per_page
+        searchState.pagination.per_page,
+        searchState.order
     ]);
 
     async function getData() {
@@ -107,6 +125,8 @@ const PageList = () => {
                         search: searchState.search,
                         page: searchState.pagination.page,
                         per_page: searchState.pagination.per_page,
+                        sort: searchState.order.sort,
+                        dir: searchState.order.dir,
                     }
                 });
                 if (subscribed.current) {
@@ -121,6 +141,9 @@ const PageList = () => {
                 }
             } catch (error) {
                 console.error(error);
+                if (categoryHttp.isRequestCancelled(error)) {
+                    return;
+                }
                 snackbar.enqueueSnackbar(
                     'Não foi possível carregar as informações',
                     {
@@ -139,9 +162,10 @@ const PageList = () => {
             data = {data}
             fab={fab}
             tableTitle={'Listagem categorias'}
-            columnsDefinition={columnsDefinition}
+            columnsDefinition={columns}
             loading={loading}
             searchStateProps={{
+                initialState,
                 searchState,
                 setSearchState
             }}
