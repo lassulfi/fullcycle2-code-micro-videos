@@ -6,28 +6,12 @@ import AddIcon from '@material-ui/icons/Add';
 import Table, { makeActionStyles } from '../Table';
 import { MUIDataTableColumn } from 'mui-datatables';
 import FilterResetButton from '../Table/FilterResetButton';
-
-interface Pagination {
-    page: number;
-    total: number;
-    per_page: number;
-}
-
-interface Order {
-    sort: string | null;
-    dir: string | null;
-}
-
-export interface SearchState {
-    search: string;
-    pagination: Pagination;
-    order: Order;
-}
+import { State } from '../../store/search/types';
+import { Creators } from '../../store/search';
 
 interface SearchStateProps {
-    initialState: SearchState;
-    searchState: SearchState;
-    setSearchState: (value: SearchState) => void
+    searchState: State;
+    dispatch: React.Dispatch<any>;
 }
 
 export interface FabProps {
@@ -73,6 +57,7 @@ const PageList: React.FC<PageListProps> = (props) => {
                         data={props.data}
                         columns={props.columnsDefinition}
                         loading={isLoading()}
+                        debouncedSearchTime={500}
                         options={{
                             serverSide: true,
                             responsive: 'scrollMaxHeight',
@@ -82,38 +67,19 @@ const PageList: React.FC<PageListProps> = (props) => {
                             count: (props.searchStateProps as any).searchState.pagination.total,
                             customToolbar: () => (
                                 <FilterResetButton 
-                                    handleClick={() => {(props.searchStateProps as any).setSearchState((props.searchStateProps as any).initialState)}}
+                                    handleClick={() => {
+                                        // (props.searchStateProps as any).dispatch({type: 'reset'})
+                                    }}
                                 />
                                 ),
-                            onSearchChange: (value) => (props.searchStateProps as any).setSearchState(prevState => ({
-                                ...prevState,
-                                search: value,
-                                pagination: {
-                                    ...prevState.pagination,
-                                    page: 1,
-                                }
-                            })),
-                            onChangePage: (page) => (props.searchStateProps as any).setSearchState(prevState => ({
-                                ...prevState,
-                                pagination: {
-                                    ...prevState.pagination,
-                                    page: page + 1
-                                }
-                            })),
-                            onChangeRowsPerPage: (perPage) => (props.searchStateProps as any).setSearchState(prevState => ({
-                                ...prevState,
-                                pagination: {
-                                    ...prevState.pagination,
-                                    per_page: perPage
-                                }
-                            })),
-                            onColumnSortChange: (changeColumn: string, direction: string) => (props.searchStateProps as any).setSearchState(prevState => ({
-                                ...prevState,
-                                order: {
+                            onSearchChange: (value) => (props.searchStateProps as any).dispatch(Creators.setSearch({search: value})),
+                            onChangePage: (page) => (props.searchStateProps as any).dispatch(Creators.setPage({page: page + 1})),
+                            onChangeRowsPerPage: (perPage) => (props.searchStateProps as any).dispatch(Creators.setPerPage({per_page: perPage})),
+                            onColumnSortChange: (changeColumn: string, direction: string) => (props.searchStateProps as any)
+                                .dispatch(Creators.setOrder({
                                     sort: changeColumn,
-                                    dir: direction.includes('desc') ? 'desc': 'asc',
-                                }
-                            }))
+                                    dir: direction.includes('desc') ? 'desc': 'asc'
+                                }))
                         }}
                     />
                 </MuiThemeProvider> 

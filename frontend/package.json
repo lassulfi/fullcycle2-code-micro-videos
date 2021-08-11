@@ -27,6 +27,8 @@
     "react-hook-form": "^5.5.3",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
+    "redux": "^4.0.4",
+    "reduxsauce": "^1.1.1",
     "route-parser": "0.0.5",
     "typescript": "^4.3.2",
     "web-vitals": "^1.1.2",

@@ -1,7 +1,7 @@
 // @flow 
-import React, { useRef, useState } from 'react';
+import React, { useReducer, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Page, { FabProps, SearchState } from '../../components/PageList';
+import Page, { FabProps } from '../../components/PageList';
 import { BadgeYes, BadgeNo } from '../../components/Navbar/Badge';
 import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
@@ -13,6 +13,7 @@ import { useSnackbar } from 'notistack';
 import { IconButton } from '@material-ui/core';
 import EditIcon from '@material-ui/icons/Edit';
 import { MUIDataTableMeta } from 'mui-datatables';
+import reducer, { INITIAL_STATE } from '../../store/search';
 
 const fab: FabProps = {
     title: 'Adicionar categoria',
@@ -74,23 +75,11 @@ const columnsDefinition: TableColumn[] = [
 ];
 
 const PageList = () => {
-    const initialState = {
-        search: '', 
-        pagination: {
-            page: 1,
-            total: 0,
-            per_page: 10,
-        },
-        order: {
-            sort: null,
-            dir: null,
-        }
-    };
     const snackbar = useSnackbar();
     const subscribed = useRef(true);
     const [data, setData] = useState<Category[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
-    const [searchState, setSearchState] = useState<SearchState>(initialState);
+    const [searchState, dispatch] = useReducer(reducer, INITIAL_STATE);
 
     const columns = columnsDefinition.map(column => {
         return column.name === searchState.order.sort 
@@ -122,7 +111,7 @@ const PageList = () => {
             try {
                 const {data} = await categoryHttp.list<ListResponse<Category>>({
                     queryParams: {
-                        search: searchState.search,
+                        search: cleanSearchText(searchState.search),
                         page: searchState.pagination.page,
                         per_page: searchState.pagination.per_page,
                         sort: searchState.order.sort,
@@ -131,13 +120,13 @@ const PageList = () => {
                 });
                 if (subscribed.current) {
                     setData(data.data);
-                    setSearchState(prevState => ({
-                        ...prevState,
-                        pagination: {
-                            ...prevState.pagination,
-                            total: data.meta.total
-                        }
-                    }))
+                    // setSearchState(prevState => ({
+                    //     ...prevState,
+                    //     pagination: {
+                    //         ...prevState.pagination,
+                    //         total: data.meta.total
+                    //     }
+                    // }))
                 }
             } catch (error) {
                 console.error(error);
@@ -155,6 +144,15 @@ const PageList = () => {
             }
     }
 
+    function cleanSearchText (text) {
+        let newText = text;
+        if (text && text.value !== undefined) {
+            newText = text.value;
+        }
+
+        return newText;
+    }
+
     return (
         <Page 
             pageTitle={'Listagem categorias'}
@@ -165,9 +163,8 @@ const PageList = () => {
             columnsDefinition={columns}
             loading={loading}
             searchStateProps={{
-                initialState,
                 searchState,
-                setSearchState
+                dispatch
             }}
         />
     );
