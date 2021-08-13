@@ -2,7 +2,6 @@ import { AnyAction } from "redux";
 
 export interface Pagination {
     page: number;
-    total: number;
     per_page: number;
 }
 
@@ -12,14 +11,14 @@ export interface Order {
 }
 
 export interface State {
-    search: string | { value, [ key: string ]: any };
+    search: string | { value, [ key: string ]: any } | null;
     pagination: Pagination;
     order: Order;
 }
 
 export interface SetSearchAction extends AnyAction {
     payload: {
-        search: string | { value, [ key: string ]: any }
+        search: string | { value, [ key: string ]: any } | null
     }
 }
 

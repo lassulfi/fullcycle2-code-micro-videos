@@ -11,6 +11,7 @@ import { Creators } from '../../store/search';
 
 interface SearchStateProps {
     searchState: State;
+    totalRecords: number;
     dispatch: React.Dispatch<any>;
 }
 
@@ -64,12 +65,10 @@ const PageList: React.FC<PageListProps> = (props) => {
                             searchText: (props.searchStateProps as any).searchState.search,
                             page: (props.searchStateProps as any).searchState.pagination.page - 1,
                             rowsPerPage: (props.searchStateProps as any).searchState.pagination.per_page,
-                            count: (props.searchStateProps as any).searchState.pagination.total,
+                            count: (props.searchStateProps as any).totalRecords,
                             customToolbar: () => (
                                 <FilterResetButton 
-                                    handleClick={() => {
-                                        // (props.searchStateProps as any).dispatch({type: 'reset'})
-                                    }}
+                                    handleClick={() => (props.searchStateProps as any).dispatch(Creators.setReset())}
                                 />
                                 ),
                             onSearchChange: (value) => (props.searchStateProps as any).dispatch(Creators.setSearch({search: value})),

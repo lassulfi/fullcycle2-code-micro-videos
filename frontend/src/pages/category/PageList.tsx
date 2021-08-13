@@ -80,6 +80,7 @@ const PageList = () => {
     const [data, setData] = useState<Category[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [searchState, dispatch] = useReducer(reducer, INITIAL_STATE);
+    const [totalRecords, setTotalRecords] = useState<number>(0);
 
     const columns = columnsDefinition.map(column => {
         return column.name === searchState.order.sort 
@@ -120,6 +121,7 @@ const PageList = () => {
                 });
                 if (subscribed.current) {
                     setData(data.data);
+                    setTotalRecords(data.meta.total);
                     // setSearchState(prevState => ({
                     //     ...prevState,
                     //     pagination: {
@@ -164,6 +166,7 @@ const PageList = () => {
             loading={loading}
             searchStateProps={{
                 searchState,
+                totalRecords,
                 dispatch
             }}
         />

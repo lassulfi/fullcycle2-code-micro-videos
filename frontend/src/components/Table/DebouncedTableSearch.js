@@ -27,24 +27,39 @@ const defaultSearchStyles = theme => ({
   },
 });
 
-class DebouncedTableSearch extends React.Component {
+class DebouncedTableSearch extends React.PureComponent {
   constructor(props) {
       super(props);
+      const { searchText } = this.props;
+      let value = searchText;
+    if (searchText && searchText.value !== undefined) {
+      value = searchText.value;
+    }
       this.state = {
-          text: props.searchText,
+          text: value,
       };
-      this.dispatchOnSearch = debounce(this.dispatchOnSearch.bind(this), this.props.debounceTime);
+      this.dispatchOnSearch = debounce(this.debouncedOnSearch.bind(this), this.props.debounceTime);
   }
 
   handleTextChange = event => {
     const value = event.target.value;
     this.setState({
         text: value
-    }, () => this.dispatchOnSearch(value));
+    }, () => this.debouncedOnSearch(value));
   }
 
-  dispatchOnSearch = value => {
+  debouncedOnSearch = value => {
     this.props.onSearch(value)
+  }
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    const { searchText } = this.props;
+    if (searchText && searchText.value !== undefined && prevProps.searchText !== this.props.searchText) {
+        const value = searchText.value;
+        this.setState({
+          text: value
+        }, () => this.props.onSearch(value));
+    }
   }
 
   componentDidMount() {
@@ -64,9 +79,6 @@ class DebouncedTableSearch extends React.Component {
   render() {
     const { classes, options, onHide, searchText } = this.props;
     let value = this.state.text;
-    if (searchText && searchText.value !== undefined) {
-        value = searchText.value;
-    }
 
     return (
       <Grow appear in={true} timeout={300}>
