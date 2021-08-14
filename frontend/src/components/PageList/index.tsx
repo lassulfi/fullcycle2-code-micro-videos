@@ -6,11 +6,11 @@ import AddIcon from '@material-ui/icons/Add';
 import Table, { makeActionStyles } from '../Table';
 import { MUIDataTableColumn } from 'mui-datatables';
 import FilterResetButton from '../Table/FilterResetButton';
-import { State } from '../../store/search/types';
-import { Creators } from '../../store/search';
+import { State } from '../../store/filter/types';
+import { Creators } from '../../store/filter';
 
-interface SearchStateProps {
-    searchState: State;
+interface FilterStateProps {
+    filterState: State;
     totalRecords: number;
     dispatch: React.Dispatch<any>;
 }
@@ -30,13 +30,13 @@ interface PageListProps<T = any> {
     tableTitle: string;
     columnsDefinition: MUIDataTableColumn[];
     loading?: boolean,
-    searchStateProps?: SearchStateProps
+    filterStateProps?: FilterStateProps
 }
 
 const PageList: React.FC<PageListProps> = (props) => {
     const isLoading = (): boolean => props.loading 
         ? props.loading
-        : false
+        : false;
 
     return (
         <Page title={props.pageTitle}>
@@ -62,19 +62,19 @@ const PageList: React.FC<PageListProps> = (props) => {
                         options={{
                             serverSide: true,
                             responsive: 'scrollMaxHeight',
-                            searchText: (props.searchStateProps as any).searchState.search,
-                            page: (props.searchStateProps as any).searchState.pagination.page - 1,
-                            rowsPerPage: (props.searchStateProps as any).searchState.pagination.per_page,
-                            count: (props.searchStateProps as any).totalRecords,
+                            searchText: (props.filterStateProps as any).filterState.search,
+                            page: (props.filterStateProps as any).filterState.pagination.page - 1,
+                            rowsPerPage: (props.filterStateProps as any).filterState.pagination.per_page,
+                            count: (props.filterStateProps as any).totalRecords,
                             customToolbar: () => (
                                 <FilterResetButton 
-                                    handleClick={() => (props.searchStateProps as any).dispatch(Creators.setReset())}
+                                    handleClick={() => (props.filterStateProps as any).dispatch(Creators.setReset())}
                                 />
                                 ),
-                            onSearchChange: (value) => (props.searchStateProps as any).dispatch(Creators.setSearch({search: value})),
-                            onChangePage: (page) => (props.searchStateProps as any).dispatch(Creators.setPage({page: page + 1})),
-                            onChangeRowsPerPage: (perPage) => (props.searchStateProps as any).dispatch(Creators.setPerPage({per_page: perPage})),
-                            onColumnSortChange: (changeColumn: string, direction: string) => (props.searchStateProps as any)
+                            onSearchChange: (value) => (props.filterStateProps as any).dispatch(Creators.setSearch({search: value})),
+                            onChangePage: (page) => (props.filterStateProps as any).dispatch(Creators.setPage({page: page + 1})),
+                            onChangeRowsPerPage: (perPage) => (props.filterStateProps as any).dispatch(Creators.setPerPage({per_page: perPage})),
+                            onColumnSortChange: (changeColumn: string, direction: string) => (props.filterStateProps as any)
                                 .dispatch(Creators.setOrder({
                                     sort: changeColumn,
                                     dir: direction.includes('desc') ? 'desc': 'asc'

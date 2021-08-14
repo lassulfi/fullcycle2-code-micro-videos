@@ -1,5 +1,5 @@
 // @flow 
-import React, { useReducer, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Page, { FabProps } from '../../components/PageList';
 import { BadgeYes, BadgeNo } from '../../components/Navbar/Badge';
@@ -13,7 +13,7 @@ import { useSnackbar } from 'notistack';
 import { IconButton } from '@material-ui/core';
 import EditIcon from '@material-ui/icons/Edit';
 import { MUIDataTableMeta } from 'mui-datatables';
-import reducer, { INITIAL_STATE } from '../../store/search';
+import useFilter from '../../hooks/useFilter';
 
 const fab: FabProps = {
     title: 'Adicionar categoria',
@@ -79,16 +79,20 @@ const PageList = () => {
     const subscribed = useRef(true);
     const [data, setData] = useState<Category[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
-    const [searchState, dispatch] = useReducer(reducer, INITIAL_STATE);
-    const [totalRecords, setTotalRecords] = useState<number>(0);
+    const {
+        filterState,
+        dispatch,
+        totalRecords,
+        setTotalRecords
+    } = useFilter();
 
     const columns = columnsDefinition.map(column => {
-        return column.name === searchState.order.sort 
+        return column.name === filterState.order.sort 
         ? {
             ...column,
             options: {
                 ...column.options,
-                sortDirection: searchState.order.dir as any
+                sortDirection: filterState.order.dir as any
             }
         } 
         : column;
@@ -101,10 +105,10 @@ const PageList = () => {
             subscribed.current = false;
         }
     }, [
-        searchState.search,
-        searchState.pagination.page,
-        searchState.pagination.per_page,
-        searchState.order
+        filterState.search,
+        filterState.pagination.page,
+        filterState.pagination.per_page,
+        filterState.order
     ]);
 
     async function getData() {
@@ -112,11 +116,11 @@ const PageList = () => {
             try {
                 const {data} = await categoryHttp.list<ListResponse<Category>>({
                     queryParams: {
-                        search: cleanSearchText(searchState.search),
-                        page: searchState.pagination.page,
-                        per_page: searchState.pagination.per_page,
-                        sort: searchState.order.sort,
-                        dir: searchState.order.dir,
+                        search: cleanSearchText(filterState.search),
+                        page: filterState.pagination.page,
+                        per_page: filterState.pagination.per_page,
+                        sort: filterState.order.sort,
+                        dir: filterState.order.dir,
                     }
                 });
                 if (subscribed.current) {
@@ -164,8 +168,8 @@ const PageList = () => {
             tableTitle={'Listagem categorias'}
             columnsDefinition={columns}
             loading={loading}
-            searchStateProps={{
-                searchState,
+            filterStateProps={{
+                filterState,
                 totalRecords,
                 dispatch
             }}
