@@ -8,6 +8,7 @@ import { MUIDataTableColumn } from 'mui-datatables';
 import FilterResetButton from '../Table/FilterResetButton';
 import { State } from '../../store/filter/types';
 import { Creators } from '../../store/filter';
+import useFilter from '../../hooks/useFilter';
 
 interface FilterStateProps {
     filterState: State;
@@ -37,6 +38,13 @@ const PageList: React.FC<PageListProps> = (props) => {
     const isLoading = (): boolean => props.loading 
         ? props.loading
         : false;
+
+    const {filterManager} = useFilter({
+        columns: props.columnsDefinition,
+        debounceTime: 500,
+        rowsPerPage: 10,
+        rowsPerPageOptions: [10, 25, 50]
+    }); 
 
     return (
         <Page title={props.pageTitle}>
@@ -71,14 +79,11 @@ const PageList: React.FC<PageListProps> = (props) => {
                                     handleClick={() => (props.filterStateProps as any).dispatch(Creators.setReset())}
                                 />
                                 ),
-                            onSearchChange: (value) => (props.filterStateProps as any).dispatch(Creators.setSearch({search: value})),
-                            onChangePage: (page) => (props.filterStateProps as any).dispatch(Creators.setPage({page: page + 1})),
-                            onChangeRowsPerPage: (perPage) => (props.filterStateProps as any).dispatch(Creators.setPerPage({per_page: perPage})),
-                            onColumnSortChange: (changeColumn: string, direction: string) => (props.filterStateProps as any)
-                                .dispatch(Creators.setOrder({
-                                    sort: changeColumn,
-                                    dir: direction.includes('desc') ? 'desc': 'asc'
-                                }))
+                            onSearchChange: (value) => filterManager.changeSearch({search: value}),
+                            onChangePage: (page) => filterManager.changePage({page: page + 1}),
+                            onChangeRowsPerPage: (perPage) => filterManager.changeRowsPerPage({per_page: perPage}),
+                            onColumnSortChange: (changeColumn: string, direction: string) => 
+                                filterManager.changeColumnSort(changeColumn, direction)
                         }}
                     />
                 </MuiThemeProvider> 
