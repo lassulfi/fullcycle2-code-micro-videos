@@ -62,19 +62,6 @@ export interface TableProps extends MUIDataTableProps {
     debouncedSearchTime?: number;
 }
 
-export const makeActionStyles = (column) => {
-    return theme => {
-        const copyTheme = cloneDeep(theme);
-        const selector = `&[data-testid^="MuiDataTableBodyCell-${column}"]`;
-        (copyTheme.overrides as any).MUIDataTableBodyCell.root[selector] = {
-            paddingTop: '0px',
-            paddingBottom: '0px'
-        };
-        
-        return copyTheme;
-    }
-}
-
 const Table: React.FC<TableProps> = (props) => {
     
     function extractDataTableColumns (columns: TableColumn[]): MUIDataTableColumn[] {
@@ -127,3 +114,16 @@ const Table: React.FC<TableProps> = (props) => {
 };
 
 export default Table;
+
+export function makeActionStyles (column) {
+    return theme => {
+        const copyTheme = cloneDeep(theme);
+        const selector = `&[data-testid^="MuiDataTableBodyCell-${column}"]`;
+        (copyTheme.overrides as any).MUIDataTableBodyCell.root[selector] = {
+            paddingTop: '0px',
+            paddingBottom: '0px'
+        };
+        
+        return copyTheme;
+    }
+}
