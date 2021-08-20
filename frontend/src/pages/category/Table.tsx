@@ -69,6 +69,8 @@ const columnsDefinition: TableColumn[] = [
 
 const debounceTime = 300;
 const debouncedSearchTime = 300;
+const rowsPerPage = 15;
+const rowsPerPageOptions = [15, 25, 50];
 
 const Table = () => {
     const snackbar = useSnackbar();
@@ -86,8 +88,8 @@ const Table = () => {
     } = useFilter({
         columns: columnsDefinition,
         debounceTime: debounceTime,
-        rowsPerPage: 10,
-        rowsPerPageOptions: [10, 25, 50]
+        rowsPerPage,
+        rowsPerPageOptions
     });
   
     useEffect(() => {
@@ -119,13 +121,6 @@ const Table = () => {
                 if (subscribed.current) {
                     setData(data.data);
                     setTotalRecords(data.meta.total);
-                    // setSearchState(prevState => ({
-                    //     ...prevState,
-                    //     pagination: {
-                    //         ...prevState.pagination,
-                    //         total: data.meta.total
-                    //     }
-                    // }))
                 }
             } catch (error) {
                 console.error(error);
@@ -157,6 +152,7 @@ const Table = () => {
                             searchText: filterState.search as any,
                             page: filterState.pagination.page - 1,
                             rowsPerPage: filterState.pagination.per_page,
+                            rowsPerPageOptions,
                             count: totalRecords,
                             customToolbar: () => (
                                 <FilterResetButton 

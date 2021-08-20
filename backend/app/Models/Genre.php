@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\ModelFilters\GenreFilter;
 use App\Models\Traits\Uuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -11,7 +12,7 @@ class Genre extends Model
     use SoftDeletes, Uuid;
 
     protected $fillable = [
-        'name', 
+        'name',
         'is_active'
     ];
     protected $dates = ['deleted_at'];
@@ -24,6 +25,11 @@ class Genre extends Model
     protected $keyType = 'string';
 
     public function categories() {
-        return $this->belongsToMany(Category::class);
+        return $this->belongsToMany(Category::class)->withTrashed();
+    }
+
+    public function modelFilter()
+    {
+        return $this->provideFilter(GenreFilter::class);
     }
 }
