@@ -1,5 +1,5 @@
 import { MUIDataTableColumn } from "mui-datatables";
-import { Dispatch, Reducer, useEffect, useReducer, useState } from "react";
+import React, { Dispatch, Reducer, useEffect, useReducer, useState } from "react";
 import reducer, { Creators } from "../store/filter";
 import { Actions as FilterActions, State as FilterState } from "../store/filter/types";
 import { useDebounce } from 'use-debounce';
@@ -7,6 +7,7 @@ import { useHistory } from "react-router";
 import { History } from 'history';
 import { isEqual } from 'lodash';
 import * as yup from '../utils/vendor/yup';
+import { MuiDataTableRefComponent } from "../components/Table";
 
 interface FilterManagerOptions {
     columns: MUIDataTableColumn[];
@@ -14,6 +15,14 @@ interface FilterManagerOptions {
     rowsPerPageOptions: number[];
     debounceTime: number;
     history: History;
+    tableRef: React.MutableRefObject<MuiDataTableRefComponent>,
+    extraFilter?: ExtraFilter
+}
+
+interface ExtraFilter {
+    getStateFromURL: (queryParams: URLSearchParams) => any,
+    formatSearchParams: (debounceState: FilterState) => any,
+    createValidationSchema: () => any,
 }
 
 interface UseFilterOptions extends Omit<FilterManagerOptions, 'history'> {
@@ -51,18 +60,23 @@ export default function useFilter(options: UseFilterOptions) {
 export class FilterManager {
     schema;
     state: FilterState = null as any;
+    debouncedState: FilterState = null as any;
     dispatch: Dispatch<FilterActions> = null as any;
     columns: MUIDataTableColumn[];
     rowsPerPage: number;
     rowsPerPageOptions: number[];
     history: History;
+    tableRef: React.MutableRefObject<MuiDataTableRefComponent>;
+    extraFilter?: ExtraFilter;
 
     constructor(options: FilterManagerOptions) {
-        const {columns, rowsPerPage, rowsPerPageOptions, history} = options;
+        const {columns, rowsPerPage, rowsPerPageOptions, history, tableRef, extraFilter} = options;
         this.columns = columns;
         this.rowsPerPage = rowsPerPage;
         this.rowsPerPageOptions = rowsPerPageOptions;
         this.history = history;
+        this.tableRef = tableRef;
+        this.extraFilter = extraFilter;
         this.createValidationSchema();
     }
 
@@ -113,7 +127,7 @@ export class FilterManager {
         this.history.replace({
             pathname: this.history.location.pathname,
             search: '?' + new URLSearchParams(this.formatSearchParams() as any),
-            state: this.state,
+            state: this.debouncedState,
         })
     }
 
@@ -122,7 +136,7 @@ export class FilterManager {
             pathName: this.history.location.pathname,
             search: '?' + new URLSearchParams(this.formatSearchParams() as any),
             state: {
-                ...this.state,
+                ...this.debouncedState,
                 search: this.cleanSearchText(this.state.search)
             }
         };
@@ -147,6 +161,7 @@ export class FilterManager {
                     dir: this.state.order.dir
                 }
             ),
+            ...(this.extraFilter && this.extraFilter.formatSearchParams(this.debouncedState)),
         }
     }
 
@@ -161,7 +176,12 @@ export class FilterManager {
             order: {
                 sort: queryParams.get('sort'),
                 dir: queryParams.get('dir'),
-            }
+            }, 
+            ...(
+                this.extraFilter && {
+                    extraFilter: this.extraFilter.getStateFromURL(queryParams)
+                }
+            )
         })
     }
 
@@ -193,7 +213,12 @@ export class FilterManager {
                     .nullable()
                     .transform(value => !value || !['asc', 'desc'].includes(value.toLowerCase()) ? undefined : value)
                     .default(null),
-            })
+            }), 
+            ...(
+                this.extraFilter && {
+                    extraFilter: this.extraFilter.createValidationSchema()
+                }
+            ),
         });
     }
 }

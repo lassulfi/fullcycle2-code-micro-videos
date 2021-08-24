@@ -54,7 +54,11 @@ const makeDefaultOptions = (debouncedSearchTime?): MUIDataTableOptions => ({
             debounceTime={debouncedSearchTime}
         />;
     }
-})
+});
+
+export interface MuiDataTableRefComponent {
+    width?: string;
+}
 
 export interface TableProps extends MUIDataTableProps {
     columns: TableColumn[];

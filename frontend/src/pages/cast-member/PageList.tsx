@@ -1,121 +1,30 @@
 // @flow 
-import React, { useEffect, useState } from 'react';
+import { Box, Fab } from '@material-ui/core';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import Page, { FabProps } from '../../components/PageList';
-import format from 'date-fns/format';
-import parseISO from 'date-fns/parseISO';
-import castMemberHttp from '../../utils/http/cast-member-http';
-import { CastMember, ListResponse } from '../../utils/models';
-import { TableColumn } from '../../components/Table';
-import { useSnackbar } from 'notistack';
-import { MUIDataTableMeta } from 'mui-datatables';
-import { IconButton } from '@material-ui/core';
-import EditIcon from '@material-ui/icons/Edit';
-
-const castMemberTypeMap = {
-    0: 'Diretor',
-    1: 'Ator'
-}
-
-const fab: FabProps = {
-    title: 'Adicionar membro de elencos',
-    component: Link,
-    to: '/cast-members/create',
-    size: 'small'
-}
-
-const columnsDefinition: TableColumn[] = [
-    {
-        name: 'id',
-        label: 'ID', 
-        width: '30%',
-        options: {
-            sort: false
-        }
-    }, {
-        name: "name",
-        label: "Nome",
-        width: '42%'
-    }, {
-        name: "type",
-        label: "Tipo",
-        width: '5%',
-        options: {
-            customBodyRender(value, tableMeta, updateValue) {
-                return castMemberTypeMap[value];
-            }
-        }
-    },
-    {
-        name: "created_at",
-        label: "Criado em",
-        width: '10%',
-        options: {
-            customBodyRender(value, tableMeta, updateValue) {
-                return <span>{format(parseISO(value), 'dd/MM/yyyy')}</span>
-            }
-        }
-    }, {
-        name: 'actions',
-        label: 'Ações',
-        width: '13%',
-        options: {
-            sort: false,
-            customBodyRender: (value, tableMeta: MUIDataTableMeta) => {
-                return (
-                    <IconButton
-                        color="secondary"
-                        component={Link}
-                        to={`/cast-members/${tableMeta.rowData[0]}/edit`}
-                    >
-                        <EditIcon/>
-                    </IconButton>
-                )
-            }
-        }
-    }
-];
+import { Page } from '../../components/Page';
+import Table from './Table';
+import AddIcon from '@material-ui/icons/Add'
 
 const PageList = () => {
-    const snackbar = useSnackbar();
-    const [data, setData] = useState<CastMember[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
-
-    useEffect(() => {
-        let isSubscribed = true;
-        (async () => {
-            setLoading(true);
-            try {
-                const {data} = await castMemberHttp.list<ListResponse<CastMember>>();
-                if (isSubscribed) setData(data.data);
-            } catch (error) {
-                console.error(error);
-                snackbar.enqueueSnackbar(
-                    'Não foi possível carregar as informações',
-                    {
-                        variant: 'error'
-                    }
-                );
-            } finally {
-                setLoading(false);
-            }
-        })();
-
-        return () => {
-            isSubscribed = false;
-        }
-    }, [])
 
     return (
-        <Page 
-            pageTitle={'Listagem de membros do elenco'}
-            boxDirection={'rtl'}
-            fab={fab}
-            tableTitle={'Listagem de membros de elencos'}
-            data={data}
-            columnsDefinition={columnsDefinition}
-            loading={loading}
-        />
+        <Page title={'Listagem de membros de elencos'}>
+            <Box dir={'rtl'} paddingBottom={2}>
+                <Fab
+                    title="Adicionar membro de elenco"
+                    color={'secondary'}
+                    size="small"
+                    component={Link}
+                    to="/cast-members/create"
+                >
+                    <AddIcon/>
+                </Fab>
+            </Box>
+            <Box>
+                <Table/>
+            </Box>
+        </Page>
     );
 };
 
