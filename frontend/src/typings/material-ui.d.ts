@@ -12,6 +12,7 @@ declare module '@material-ui/core/styles/overrides' {
         MUIDataTableToolbarSelect: any;
         MUIDataTableBodyRow: any;
         MUIDataTablePagination: any;
+        MUIDataTableFilterList: any;
     }
 }
 
@@ -19,7 +20,7 @@ declare module '@material-ui/core/styles/createPalette' {
     import { PaletteColorOptions } from '@material-ui/core/styles'
   
     interface Palette {
-        success: PaletteColorOptions
+        success: PaletteColor
     }
 
     interface PaletteOptions {

@@ -6,12 +6,11 @@ import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
 import categoryHttp from '../../utils/http/category-http';
 import { Category, ListResponse } from '../../utils/models';
-import DefaultTable, { makeActionStyles, TableColumn } from '../../components/Table';
+import DefaultTable, { makeActionStyles, MuiDataTableRefComponent, TableColumn } from '../../components/Table';
 import { Link } from 'react-router-dom';
 import EditIcon from '@material-ui/icons/Edit'
 import { useSnackbar } from 'notistack';
 import FilterResetButton from '../../components/Table/FilterResetButton';
-import { Creators } from '../../store/filter';
 import useFilter from '../../hooks/useFilter';
 import { BadgeNo, BadgeYes } from '../../components/Navbar/Badge';
 
@@ -21,17 +20,24 @@ const columnsDefinition: TableColumn[] = [
         label: 'ID', 
         width: '30%',
         options: {
-            sort: false
+            sort: false,
+            filter: false,
         }
     }, {
         name: "name",
         label: "Nome",
-        width: "43%"
+        width: "43%",
+        options: {
+            filter: false,
+        }
     }, {
         name: "is_active",
         label: "Ativo?",
         width: '4%',
         options: {
+            filterOptions: {
+                names: ['Sim', 'Não']
+            },
             customBodyRender(value, tableMeta, updateValue) {
                 return value ? <BadgeYes /> : <BadgeNo />;
             }
@@ -42,6 +48,7 @@ const columnsDefinition: TableColumn[] = [
         label: "Criado em",
         width: '10%',
         options: {
+            filter: false,
             customBodyRender(value, tableMeta, updateValue) {
                 return <span>{format(parseISO(value), 'dd/MM/yyyy')}</span>
             }
@@ -52,6 +59,7 @@ const columnsDefinition: TableColumn[] = [
         width: '13%', 
         options: {
             sort: false,
+            filter: false,
             customBodyRender: (value, tableMeta: MUIDataTableMeta) => {
                 return (
                     <IconButton
@@ -77,19 +85,20 @@ const Table = () => {
     const subscribed = useRef(true);
     const [data, setData] = useState<Category[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
+    const tableRef = useRef() as React.MutableRefObject<MuiDataTableRefComponent>;
     const {
         columns,
         filterManager,
         filterState,
         debouncedFilterState,
-        dispatch,
         totalRecords,
         setTotalRecords
     } = useFilter({
         columns: columnsDefinition,
         debounceTime: debounceTime,
         rowsPerPage,
-        rowsPerPageOptions
+        rowsPerPageOptions,
+        tableRef
     });
   
     useEffect(() => {
@@ -156,7 +165,7 @@ const Table = () => {
                             count: totalRecords,
                             customToolbar: () => (
                                 <FilterResetButton 
-                                    handleClick={() => dispatch(Creators.setReset())}
+                                    handleClick={() => filterManager.resetFilter()}
                                 />
                                 ),
                             onSearchChange: (value) => filterManager.changeSearch(value),

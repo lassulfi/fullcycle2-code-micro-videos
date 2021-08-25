@@ -98,7 +98,23 @@ export class FilterManager {
                 dir: direction.includes('desc') ? 'desc': 'asc'
             })
         );
-    } 
+        // this.resetTablePagination();
+    }
+
+    changeExtraFilter(data) {
+        this.dispatch(Creators.updateExtraFilter(data));
+    }
+
+    resetFilter() {
+        const INITIAL_STATE = {
+            ...this.schema.cast({}),
+            search: {value: null, update: true}
+        };
+        this.dispatch(Creators.setReset({
+            state: INITIAL_STATE
+        }));
+        // this.resetTablePagination();
+    }
 
     applyOrderInColumns() {
         this.columns = this.columns.map(column => {
