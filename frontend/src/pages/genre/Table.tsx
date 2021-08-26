@@ -97,6 +97,7 @@ const rowsPerPageOptions = [15, 25, 50];
 
 const Table = () => {
     const snackbar = useSnackbar();
+    const subscribed = useRef(true);
     const [data, setData] = useState<Genre[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [categories, setCategories] = useState<Category[]>();
@@ -156,40 +157,74 @@ const Table = () => {
     }
 
     useEffect(() => {
-        let isSubscribed = true;
-        (async () => {
-            try {
-                const {data} = await categoryHttp.list({queryParams: {all: ''}});
-                if (isSubscribed) {
-                    setCategories(data.data);
-                    (columnCategories.options as any).filterOptions.names = 
-                        data.data.map(category => category.name);
-                }
-            } catch (error) {
-                console.error(error);
-                snackbar.enqueueSnackbar(
-                    'Não foi possível carregar as informações',
-                    {
-                        variant: 'error'
-                    }
-                );
-            }
-        })();
+        subscribed.current = true;
+        getCategories();
 
         return () => {
-            isSubscribed = false
+            subscribed.current = false
         }
     }, [])
 
+    async function getCategories() {
+        try {
+            const {data} = await categoryHttp.list({queryParams: {all: ''}});
+            if (subscribed.current) {
+                setCategories(data.data);
+                (columnCategories.options as any).filterOptions.names = 
+                    data.data.map(category => category.name);
+            }
+        } catch (error) {
+            console.error(error);
+            snackbar.enqueueSnackbar(
+                'Não foi possível carregar as informações',
+                {
+                    variant: 'error'
+                }
+            );
+        }
+    }
+
     useEffect(() => {
-        let isSubscribed = true;
-        (async () => {
-            setLoading(true);
+        subscribed.current = true;
+        filterManager.pushHistory();
+        getData();  
+        return () => {
+            subscribed.current = false;
+        }
+    }, [
+        filterManager.cleanSearchText(debouncedFilterState.search),
+        debouncedFilterState.pagination.page,
+        debouncedFilterState.pagination.per_page,
+        debouncedFilterState.order,
+        JSON.stringify(debouncedFilterState.extraFilter),
+    ]);
+
+    async function getData() {
+        setLoading(true);
             try {
-                const {data} = await genreHttp.list<ListResponse<Genre>>();
-                if (isSubscribed) setData(data.data);
+                const {data} = await genreHttp.list<ListResponse<Genre>>({
+                    queryParams: {
+                        search: filterManager.cleanSearchText(filterState.search),
+                        page: filterState.pagination.page,
+                        per_page: filterState.pagination.per_page,
+                        sort: filterState.order.sort,
+                        dir: filterState.order.dir,
+                        ...(
+                            debouncedFilterState.extraFilter &&
+                            debouncedFilterState.extraFilter.categories &&
+                            {categories: debouncedFilterState.extraFilter.categories.join(',')}
+                        )
+                    }
+                });
+                if (subscribed.current) {
+                    setData(data.data);
+                    setTotalRecords(data.meta.total);
+                };
             } catch (error) {
                 console.error(error);
+                if (genreHttp.isRequestCancelled(error)) {
+                    return;
+                }
                 snackbar.enqueueSnackbar(
                     'Não foi possível carregar as informações',
                     {
@@ -199,12 +234,7 @@ const Table = () => {
             } finally {
                 setLoading(false);
             }
-        })();    
-
-        return () => {
-            isSubscribed = false;
-        }
-    }, []);
+    }
 
     return (
         <MuiThemeProvider theme={makeActionStyles(columnsDefinition.length - 1)}>

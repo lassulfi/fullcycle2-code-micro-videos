@@ -4,6 +4,7 @@ import MUIDataTable, {MUIDataTableColumn, MUIDataTableOptions, MUIDataTableProps
 import {merge, omit, cloneDeep} from 'lodash';
 import { MuiThemeProvider, Theme, useMediaQuery, useTheme } from '@material-ui/core';
 import DebouncedTableSearch from './DebouncedTableSearch';
+import { RefAttributes } from 'react';
 
 export interface TableColumn extends MUIDataTableColumn {
     width?: string
@@ -57,16 +58,17 @@ const makeDefaultOptions = (debouncedSearchTime?): MUIDataTableOptions => ({
 });
 
 export interface MuiDataTableRefComponent {
-    width?: string;
+    changePage: (page: number) => void;
+    changeRowsPerPage: (rowsPerPage: number) => void;
 }
 
-export interface TableProps extends MUIDataTableProps {
+export interface TableProps extends MUIDataTableProps, RefAttributes<MuiDataTableRefComponent> {
     columns: TableColumn[];
     loading?: boolean;
     debouncedSearchTime?: number;
 }
 
-const Table: React.FC<TableProps> = (props) => {
+const Table = React.forwardRef<MuiDataTableRefComponent, TableProps>((props, ref) => {
     
     function extractDataTableColumns (columns: TableColumn[]): MUIDataTableColumn[] {
         setColumnsWidth(columns);
@@ -95,12 +97,17 @@ const Table: React.FC<TableProps> = (props) => {
         newProps.options.responsive = isSmOrDown ? 'scrollMaxHeight' : 'stacked';
     }
 
-    function getOriginalMuiDataTableProps() { return omit(newProps, 'loading'); }
+    function getOriginalMuiDataTableProps() { 
+        return {
+            ...omit(newProps, 'loading'),
+            ref
+        } 
+    }
+    const theme = cloneDeep<Theme>(useTheme());
+    const isSmOrDown = useMediaQuery(theme.breakpoints.down('sm'));
 
     const defaultOptions = makeDefaultOptions(props.debouncedSearchTime);
     
-    const theme = cloneDeep<Theme>(useTheme());
-    const isSmOrDown = useMediaQuery(theme.breakpoints.down('sm'));
     const newProps = merge(
         {options: cloneDeep(defaultOptions)}, 
         props, 
@@ -115,7 +122,7 @@ const Table: React.FC<TableProps> = (props) => {
             <MUIDataTable {...originalProps}/>
         </MuiThemeProvider>
     );
-};
+});
 
 export default Table;
 

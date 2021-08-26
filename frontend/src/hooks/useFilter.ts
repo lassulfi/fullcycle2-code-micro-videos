@@ -21,7 +21,7 @@ interface FilterManagerOptions {
 
 interface ExtraFilter {
     getStateFromURL: (queryParams: URLSearchParams) => any,
-    formatSearchParams: (debounceState: FilterState) => any,
+    formatSearchParams: (debouncedState: FilterState) => any,
     createValidationSchema: () => any,
 }
 
@@ -39,6 +39,7 @@ export default function useFilter(options: UseFilterOptions) {
     const [totalRecords, setTotalRecords] = useState<number>(0);
 
     filterManager.state = filterState;
+    filterManager.debouncedState = debouncedFilterState;
     filterManager.dispatch = dispatch;
     filterManager.applyOrderInColumns();
 
@@ -91,18 +92,18 @@ export class FilterManager {
     changeRowsPerPage(perPage) {
         this.dispatch(Creators.setPerPage({per_page: perPage}))  
     }
-    
+
+    changeExtraFilter(data) {
+        this.dispatch(Creators.updateExtraFilter(data));
+    }
+
     changeColumnSort(changeColumn: string, direction: string) {
         this.dispatch(Creators.setOrder({
                 sort: changeColumn,
                 dir: direction.includes('desc') ? 'desc': 'asc'
             })
         );
-        // this.resetTablePagination();
-    }
-
-    changeExtraFilter(data) {
-        this.dispatch(Creators.updateExtraFilter(data));
+        this.resetTablePagination();
     }
 
     resetFilter() {
@@ -113,7 +114,12 @@ export class FilterManager {
         this.dispatch(Creators.setReset({
             state: INITIAL_STATE
         }));
-        // this.resetTablePagination();
+        this.resetTablePagination();
+    }
+
+    private resetTablePagination() {
+        this.tableRef.current.changeRowsPerPage(this.rowsPerPage);
+        this.tableRef.current.changePage(0);
     }
 
     applyOrderInColumns() {

@@ -39,8 +39,8 @@ export interface CastMember extends Id, Timestampable {
 }
 
 export const CastMemberTypeMap = {
-    0: 'Diretor',
-    1: 'Ator'
+    1: 'Diretor',
+    2: 'Ator'
 }
 
 export interface Genre extends Id, Timestampable {

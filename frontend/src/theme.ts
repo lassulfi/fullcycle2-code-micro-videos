@@ -1,4 +1,3 @@
-  
 import {createMuiTheme} from "@material-ui/core";
 import {PaletteOptions, SimplePaletteColorOptions} from "@material-ui/core/styles/createPalette";
 import {green, red} from "@material-ui/core/colors";
@@ -115,6 +114,6 @@ const theme = createMuiTheme({
             }
         }
     }
-})
+});
 
 export default theme;

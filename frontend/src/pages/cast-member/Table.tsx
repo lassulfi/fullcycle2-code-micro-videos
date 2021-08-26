@@ -51,6 +51,7 @@ const columnsDefinition: TableColumn[] = [
         label: "Criado em",
         width: '10%',
         options: {
+            filter: false,
             customBodyRender(value, tableMeta, updateValue) {
                 return <span>{format(parseISO(value), 'dd/MM/yyyy')}</span>
             }
@@ -61,6 +62,7 @@ const columnsDefinition: TableColumn[] = [
         width: '13%',
         options: {
             sort: false,
+            filter: false,
             customBodyRender: (value, tableMeta: MUIDataTableMeta) => {
                 return (
                     <IconButton
@@ -208,7 +210,7 @@ const Table = () => {
                     rowsPerPage: filterState.pagination.per_page,
                     rowsPerPageOptions,
                     count: totalRecords,
-                    onFilterChange: (column, filterList) => {
+                    onFilterChange: (column, filterList, type) => {
                         const columnIndex = columns.findIndex(c => c.name === column);
                         filterManager.changeExtraFilter({
                             [column]: filterList[columnIndex].length ? filterList[columnIndex][0] : null
