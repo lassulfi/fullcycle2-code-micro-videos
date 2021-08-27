@@ -9,7 +9,8 @@ const listRoutes = {
     'dashboard': 'Dashboard', 
     'categories.list': 'Categorias',
     'genres.list': 'Gêneros',
-    'cast_members.list': 'Membros de elenco'
+    'cast_members.list': 'Membros de elenco',
+    'videos.list': 'Vídeos',
 };
 
 const menuRoutes = routes.filter(route => Object.keys(listRoutes).includes(route.name));
