@@ -5,7 +5,7 @@ import { Page } from '../../components/Page';
 import Form from './Form';
 
 const PageForm = () => {
-    const {id} = useParams();
+    const {id}: {id: string} = useParams();
     return (
         <Page title={!id ? 'Criar vídeo' : 'Editar vídeo'}>
             <Form />
