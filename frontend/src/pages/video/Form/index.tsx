@@ -1,5 +1,5 @@
 // @flow 
-import { useMediaQuery, useTheme } from '@material-ui/core';
+import { Button, Card, CardContent, makeStyles, Theme, useMediaQuery, useTheme } from '@material-ui/core';
 import { Typography } from '@material-ui/core';
 import { Checkbox, FormControlLabel, Grid, TextField } from '@material-ui/core';
 import { useSnackbar } from 'notistack';
@@ -14,6 +14,16 @@ import videoHttp from '../../../utils/http/video-http';
 import { Video } from '../../../utils/models';
 import * as yup from '../../../utils/vendor/yup';
 import RatingField from './RatingField';
+import CloudUploadIcon from '@material-ui/icons/CloudUpload';
+import UploadField from './UploadField';
+
+const useStyles = makeStyles((theme: Theme) => ({
+    cardUpload: {
+        borderRadius: "4px",
+        backgroundColor: "#f5f5f5",
+        margin: theme.spacing(2, 0)
+    }
+}));
 
 const validationSchema = yup.object().shape({
     title: yup.string()
@@ -37,6 +47,7 @@ const validationSchema = yup.object().shape({
 });
 
 const Form = () => {
+    const classes = useStyles();
     const {register, 
         getValues,
         setValue, 
@@ -206,7 +217,40 @@ const Form = () => {
                         }}
                     />
                     <br/>
-                    <InputFile />
+                    <Card className={classes.cardUpload}>
+                        <CardContent>
+                            <Typography color="primary" variant="h6">
+                                Imagens
+                            </Typography>
+                            <UploadField 
+                                accept="images/*"
+                                label="Thumb"
+                                setValue={(value) => setValue('thumb_file', value)}
+                            />
+                            <UploadField 
+                                accept="images/*"
+                                label="Banner"
+                                setValue={(value) => setValue('banner_file', value)}
+                            />
+                        </CardContent>
+                    </Card>
+                    <Card className={classes.cardUpload}>
+                        <CardContent>
+                            <Typography color="primary" variant="h6">
+                                Vídeos
+                            </Typography>
+                        <UploadField 
+                            accept="video/mp4"
+                            label="Trailer"
+                            setValue={(value) => setValue('trailer_file', value)}
+                        />
+                        <UploadField 
+                            accept="video/mp4"
+                            label="Principal"
+                            setValue={(value) => setValue('video_file', value)}
+                        />
+                        </CardContent>
+                    </Card>
                     <br />
 
                     <FormControlLabel
