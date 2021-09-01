@@ -11,11 +11,13 @@ import InputFile from '../../../components/InputFile';
 import Rating from '../../../components/Rating';
 import SubmitActions from '../../../components/SubmitActions';
 import videoHttp from '../../../utils/http/video-http';
-import { Video } from '../../../utils/models';
+import { Video, VideoFileFieldsMap } from '../../../utils/models';
 import * as yup from '../../../utils/vendor/yup';
 import RatingField from './RatingField';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import UploadField from './UploadField';
+import AsyncAutocomplete from '../../../components/AsyncAutocomplete';
+import genreHttp from '../../../utils/http/genre-http';
 
 const useStyles = makeStyles((theme: Theme) => ({
     cardUpload: {
@@ -46,6 +48,8 @@ const validationSchema = yup.object().shape({
         .required()
 });
 
+const fileFields = Object.keys(VideoFileFieldsMap);
+
 const Form = () => {
     const classes = useStyles();
     const {register, 
@@ -70,7 +74,7 @@ const Form = () => {
     const isGreaterThenMd = useMediaQuery(theme.breakpoints.up('md'));
 
     useEffect(() => {
-        ['rating', 'opened'].forEach(name => register({name: name}));
+        ['rating', 'opened', ...fileFields].forEach(name => register({name: name}));
     }, [register]);
 
     useEffect(() => {
@@ -139,6 +143,13 @@ const Form = () => {
         }
     }
 
+    const fetchOptions = (searchText) => genreHttp.list({
+        queryParams: {
+            search: searchText,
+            all: ""
+        },
+    }).then(({data}) => data.data);
+
     return (
         <DefaultForm GridItemProps={{xs: 12}} 
             onSubmit={handleSubmit(onSubmit)}
@@ -204,7 +215,16 @@ const Form = () => {
                     </Grid>
                     Elenco
                     <br />
-                    Gêneros e Categorias
+                    <AsyncAutocomplete 
+                        fetchOptions={fetchOptions}
+                        AutocompleteProps={{
+                            freeSolo: true,
+                            getOptionLabel: option => option.name
+                        }}
+                        TextFieldProps={{
+                            label: 'Gêneros'
+                        }}
+                    />
                 </Grid>
                 <Grid item xs={12} md={6}>
                     <RatingField 
@@ -223,12 +243,12 @@ const Form = () => {
                                 Imagens
                             </Typography>
                             <UploadField 
-                                accept="images/*"
+                                accept="image/*"
                                 label="Thumb"
                                 setValue={(value) => setValue('thumb_file', value)}
                             />
                             <UploadField 
-                                accept="images/*"
+                                accept="image/*"
                                 label="Banner"
                                 setValue={(value) => setValue('banner_file', value)}
                             />
