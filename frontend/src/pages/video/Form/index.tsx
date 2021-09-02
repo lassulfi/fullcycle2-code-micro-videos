@@ -18,6 +18,11 @@ import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import UploadField from './UploadField';
 import AsyncAutocomplete from '../../../components/AsyncAutocomplete';
 import genreHttp from '../../../utils/http/genre-http';
+import GridSelected from '../../../components/GridSelected';
+import GridSelectedItem from '../../../components/GridSelectedItem';
+import useHttpHandled from '../../../hooks/useHttpHandled';
+import GenreField from './GenreField';
+import CategoryField from './CategoryField';
 
 const useStyles = makeStyles((theme: Theme) => ({
     cardUpload: {
@@ -143,13 +148,6 @@ const Form = () => {
         }
     }
 
-    const fetchOptions = (searchText) => genreHttp.list({
-        queryParams: {
-            search: searchText,
-            all: ""
-        },
-    }).then(({data}) => data.data);
-
     return (
         <DefaultForm GridItemProps={{xs: 12}} 
             onSubmit={handleSubmit(onSubmit)}
@@ -215,16 +213,14 @@ const Form = () => {
                     </Grid>
                     Elenco
                     <br />
-                    <AsyncAutocomplete 
-                        fetchOptions={fetchOptions}
-                        AutocompleteProps={{
-                            freeSolo: true,
-                            getOptionLabel: option => option.name
-                        }}
-                        TextFieldProps={{
-                            label: 'Gêneros'
-                        }}
-                    />
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} md={6}>
+                            <GenreField />
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <CategoryField />
+                        </Grid>
+                    </Grid>
                 </Grid>
                 <Grid item xs={12} md={6}>
                     <RatingField 
