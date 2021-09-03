@@ -3,7 +3,7 @@ import { Checkbox, FormControlLabel, Grid, TextField } from '@material-ui/core';
 import { useSnackbar } from 'notistack';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import useForm from 'react-hook-form';
 import { useParams, useHistory } from 'react-router';
 import DefaultForm from '../../components/DefaultForm';
 import SubmitActions from '../../components/SubmitActions';

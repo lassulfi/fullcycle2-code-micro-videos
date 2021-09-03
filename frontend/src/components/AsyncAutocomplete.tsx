@@ -1,28 +1,26 @@
 // @flow 
 import { CircularProgress, TextField, TextFieldProps } from '@material-ui/core';
-import { Autocomplete, AutocompleteProps } from '@material-ui/lab';
-import { useSnackbar } from 'notistack';
-import React from 'react';
-import { useEffect } from 'react';
-import { useState } from 'react';
+import { Autocomplete, AutocompleteProps, UseAutocompleteSingleProps } from '@material-ui/lab';
+import React, { useEffect, useState } from 'react';
+import { useDebounce } from 'use-debounce';
 
 interface AsyncAutocompleteProps {
     fetchOptions: (searchText) => Promise<any>;
+    debounceTime?: number;
     TextFieldProps?: TextFieldProps;
-    AutocompleteProps?: Omit<AutocompleteProps<any>, 'renderInput'>;
+    AutocompleteProps?: Omit<AutocompleteProps<any>, 'renderInput'> & UseAutocompleteSingleProps<any>;
 }
 
 const AsyncAutocomplete: React.FC<AsyncAutocompleteProps> = (props) => {
     
-    const {AutocompleteProps} = props;
-    const {freeSolo, onOpen, onClose, onInputChange} = AutocompleteProps as any;
+    const {AutocompleteProps, debounceTime = 300} = props;
+    const {freeSolo = false, onOpen, onClose, onInputChange} = AutocompleteProps as any;
 
     const [open, setOpen] = useState<boolean>(false);
     const [searchText, setSearchText] = useState<string>("");
+    const [debouncedSearchText] = useDebounce(searchText, debounceTime);
     const [loading, setLoading] = useState<boolean>(false);
     const [options, setOptions] = useState([]);
-
-    const snackbar = useSnackbar();
 
     const textFieldProps: TextFieldProps = {
         margin: 'normal',
@@ -75,7 +73,7 @@ const AsyncAutocomplete: React.FC<AsyncAutocompleteProps> = (props) => {
     }, [open]);
 
     useEffect(() => {
-        if (!open || searchText === '' && freeSolo) {
+        if (!open || debouncedSearchText === '' && freeSolo) {
             return;
         }
 
@@ -83,7 +81,7 @@ const AsyncAutocomplete: React.FC<AsyncAutocompleteProps> = (props) => {
         (async () => {
             setLoading(true);
             try {
-                const data = await props.fetchOptions(searchText)
+                const data = await props.fetchOptions(debouncedSearchText)
                 if (isSubscribed) {
                     setOptions(data);
                 }
@@ -94,7 +92,7 @@ const AsyncAutocomplete: React.FC<AsyncAutocompleteProps> = (props) => {
         return () => {
             isSubscribed = false;
         }
-    }, [freeSolo ? searchText : open]);
+    }, [freeSolo ? debouncedSearchText : open]);
 
     return (
         <Autocomplete {...autocompleteProps}/>

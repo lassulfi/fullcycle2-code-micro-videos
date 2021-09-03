@@ -2,7 +2,7 @@
 import { TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, FormHelperText } from '@material-ui/core';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import useForm from 'react-hook-form';
 import { useHistory, useParams } from 'react-router';
 import DefaultForm from '../../components/DefaultForm';
 import SubmitActions from '../../components/SubmitActions';

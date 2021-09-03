@@ -1,17 +1,16 @@
 // @flow 
-import { Button, Card, CardContent, makeStyles, Theme, useMediaQuery, useTheme } from '@material-ui/core';
+import { Button, Card, CardContent, FormHelperText, makeStyles, Theme, useMediaQuery, useTheme } from '@material-ui/core';
 import { Typography } from '@material-ui/core';
 import { Checkbox, FormControlLabel, Grid, TextField } from '@material-ui/core';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
 import { useParams, useHistory } from 'react-router';
 import DefaultForm from '../../../components/DefaultForm';
 import InputFile from '../../../components/InputFile';
 import Rating from '../../../components/Rating';
 import SubmitActions from '../../../components/SubmitActions';
 import videoHttp from '../../../utils/http/video-http';
-import { Video, VideoFileFieldsMap } from '../../../utils/models';
+import { Category, Genre, Video, VideoFileFieldsMap } from '../../../utils/models';
 import * as yup from '../../../utils/vendor/yup';
 import RatingField from './RatingField';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
@@ -23,6 +22,22 @@ import GridSelectedItem from '../../../components/GridSelectedItem';
 import useHttpHandled from '../../../hooks/useHttpHandled';
 import GenreField from './GenreField';
 import CategoryField from './CategoryField';
+import useForm from 'react-hook-form';
+
+type FormData = {
+    title: string,
+    description: string,
+    year_launched: number,
+    duration: number,
+    rating: string,
+    genres: any[],
+    categories: any[],
+    thumb_file: any,
+    banner_file: any,
+    trailer_file: any,
+    video_file: any,
+    opened: boolean,
+}
 
 const useStyles = makeStyles((theme: Theme) => ({
     cardUpload: {
@@ -48,9 +63,15 @@ const validationSchema = yup.object().shape({
         .label('Duração')
         .required()
         .min(1),
+    genres: yup.array()
+        .label('Gêneros')
+        .required(),
     rating: yup.string()
         .label('Classificação')
-        .required()
+        .required(),
+    categories: yup.array()
+        .label('Categorias')
+        .required(),
 });
 
 const fileFields = Object.keys(VideoFileFieldsMap);
@@ -64,9 +85,11 @@ const Form = () => {
         errors, 
         reset, 
         watch, 
-        triggerValidation} = useForm({
+        triggerValidation} = useForm<FormData>({
             validationSchema,
             defaultValues: {
+                genres: [],
+                categories: [],
             }
         });
 
@@ -79,7 +102,13 @@ const Form = () => {
     const isGreaterThenMd = useMediaQuery(theme.breakpoints.up('md'));
 
     useEffect(() => {
-        ['rating', 'opened', ...fileFields].forEach(name => register({name: name}));
+        [
+            'rating', 
+            'opened', 
+            'genres',
+            'categories', 
+            ...fileFields
+        ].forEach(name => register({name: name}));
     }, [register]);
 
     useEffect(() => {
@@ -215,10 +244,31 @@ const Form = () => {
                     <br />
                     <Grid container spacing={2}>
                         <Grid item xs={12} md={6}>
-                            <GenreField />
+                            <GenreField 
+                                genres={watch('genres')}
+                                setGenres={(value) => setValue('genres', value, true)}
+                                categories={watch('categories')}
+                                setCategories={(value) => setValue('categories', value, true)}
+                                error={errors.genres}
+                                disabled={loading}
+                            />
                         </Grid>
                         <Grid item xs={12} md={6}>
-                            <CategoryField />
+                            <CategoryField 
+                                categories={watch('categories')}
+                                setCategories={(value) => setValue('categories', value, true)}
+                                genres={watch('genres')}
+                                error={errors.categories}
+                                disabled={loading}
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <FormHelperText>
+                                Escolha os gêneros de vídeos
+                            </FormHelperText>
+                            <FormHelperText>
+                                Escolha pelo menos uma categoria de cada gênero
+                            </FormHelperText>
                         </Grid>
                     </Grid>
                 </Grid>
