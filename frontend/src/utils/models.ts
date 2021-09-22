@@ -48,3 +48,31 @@ export interface Genre extends Id, Timestampable {
     is_active: boolean;
     categories: Category[];
 }
+
+interface GenreVideo extends Omit<Genre, 'categories'> {
+
+}
+
+export const VideoFileFieldsMap = {
+    'thumb_file': 'Thumbnail',
+    'banner_file': 'Banner',
+    'trailer_file': 'Trailer',
+    'video_file': 'Principal',
+}
+
+export interface Video extends Timestampable {
+    readonly id: string;
+    title: string;
+    description: string;
+    year_launched: number;
+    opened: boolean;
+    rating: string;
+    duration: number;
+    genres: GenreVideo[];
+    categories: Category[];
+    cast_members: CastMember[];
+    thumb_file_url: string;
+    banner_file_url: string;
+    trailer_file_url: string;
+    video_file_url: string;
+}

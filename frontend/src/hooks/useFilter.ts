@@ -163,7 +163,7 @@ export class FilterManager {
             }
         };
         const oldState = this.history.location.state;
-        const nextState = this.state;
+        const nextState = this.debouncedState;
         if(isEqual(oldState, nextState)) {
             return;
         }
@@ -172,15 +172,15 @@ export class FilterManager {
     }
 
     private formatSearchParams() {
-        const search = this.cleanSearchText(this.state.search);
+        const search = this.cleanSearchText(this.debouncedState.search);
         return {
             ...(search && search !== '' && {search: search}),
-            ...(this.state.pagination.page !== 1 && {page: this.state.pagination.page}),
-            ...(this.state.pagination.per_page !== 15 && {per_page: this.state.pagination.per_page}),
+            ...(this.debouncedState.pagination.page !== 1 && {page: this.debouncedState.pagination.page}),
+            ...(this.debouncedState.pagination.per_page !== 15 && {per_page: this.debouncedState.pagination.per_page}),
             ...(
-                this.state.order.sort && {
-                    sort: this.state.order.sort,
-                    dir: this.state.order.dir
+                this.debouncedState.order.sort && {
+                    sort: this.debouncedState.order.sort,
+                    dir: this.debouncedState.order.dir
                 }
             ),
             ...(this.extraFilter && this.extraFilter.formatSearchParams(this.debouncedState)),
@@ -217,8 +217,8 @@ export class FilterManager {
                     .transform(value => isNaN(value) || parseInt(value) < 1 ? undefined : value)
                     .default(1),
                 per_page: yup.number()
-                    .oneOf(this.rowsPerPageOptions)
-                    .transform(value => isNaN(value) ? undefined : value)
+                    .transform(value => 
+                        isNaN(value) || !this.rowsPerPageOptions.includes(parseInt(value)) ? undefined : value)
                     .default(this.rowsPerPage),
             }),
             order: yup.object().shape({
