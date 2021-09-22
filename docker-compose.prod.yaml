@@ -13,6 +13,7 @@ services:
         container_name: micro-videos-app
         volumes:
             - .:/var/www
+            - ./.docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini
         networks:
             - app-network
         depends_on:

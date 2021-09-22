@@ -7,6 +7,7 @@ use App\Models\Video;
 use App\Rules\GenresHasCategoriesRule;
 use App\Rules\RelatesToCategory;
 use App\Rules\RelatesToGenre;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class VideoController extends BasicCrudController
@@ -82,5 +83,18 @@ class VideoController extends BasicCrudController
     protected function resource()
     {
         return VideoResource::class;
+    }
+
+    protected function queryBuilder(): Builder
+    {
+        $action = \Route::getCurrentRoute()->getAction()['uses'];
+        return parent::queryBuilder()->with([
+            strpos($action, 'show') !== false
+            || strpos($action, 'store') !== false
+            || strpos($action, 'update') !== false
+                ? 'genres.categories'
+                : 'genres',
+            'categories'
+        ]);
     }
 }

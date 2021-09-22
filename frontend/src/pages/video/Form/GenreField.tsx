@@ -1,7 +1,7 @@
 // @flow 
 import { FormControl, FormControlProps, FormHelperText, Typography } from '@material-ui/core';
-import * as React from 'react';
-import AsyncAutocomplete from '../../../components/AsyncAutocomplete';
+import React, { MutableRefObject, useImperativeHandle, useRef } from 'react';
+import AsyncAutocomplete, { AsyncAutocompleteComponent } from '../../../components/AsyncAutocomplete';
 import GridSelected from '../../../components/GridSelected';
 import GridSelectedItem from '../../../components/GridSelectedItem';
 import useCollectionManager from '../../../hooks/useCollectionManager';
@@ -19,7 +19,11 @@ interface GenreFieldProps {
     FormControlProps?: FormControlProps
 }
 
-const GenreField: React.FC<GenreFieldProps> = (props) => {
+export interface GenreFieldComponent {
+    clear: () => void
+}
+
+const GenreField = React.forwardRef<GenreFieldComponent, GenreFieldProps>((props, ref) => {
     const {
         genres, 
         setGenres, 
@@ -31,6 +35,7 @@ const GenreField: React.FC<GenreFieldProps> = (props) => {
     const autocompleteHttp = useHttpHandled();
     const {addItem, removeItem} = useCollectionManager(genres, setGenres);
     const {removeItem: removeCategory} = useCollectionManager(categories, setCategories);
+    const autocompleteRef = useRef() as MutableRefObject<AsyncAutocompleteComponent>;
     
     function fetchOptions (searchText) {
         return autocompleteHttp(
@@ -45,9 +50,14 @@ const GenreField: React.FC<GenreFieldProps> = (props) => {
             .then(data => data.data)
     }
 
+    useImperativeHandle(ref, () => ({
+        clear: () => autocompleteRef.current.clear()
+    }));
+
     return (
         <>
             <AsyncAutocomplete 
+                ref={autocompleteRef}
                 fetchOptions={fetchOptions}
                 AutocompleteProps={{
                     // autoSelect: true,
@@ -78,7 +88,7 @@ const GenreField: React.FC<GenreFieldProps> = (props) => {
                                 const categoriesWithOneGenre = categories
                                     .filter(category => {
                                         const genresFromCategory = getGenresFromCategory(genres, category);
-                                        return genresFromCategory.length === 1 && genres[0].id === genre.id;
+                                        return genresFromCategory.length === 1 && genresFromCategory[0].id === genre.id;
                                     });
                                 categoriesWithOneGenre.forEach(cat => removeCategory(cat));
                                 removeItem(genre)
@@ -97,6 +107,6 @@ const GenreField: React.FC<GenreFieldProps> = (props) => {
             </FormControl>
         </>
     );
-};
+});
 
 export default GenreField;
