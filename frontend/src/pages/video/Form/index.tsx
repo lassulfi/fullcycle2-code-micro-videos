@@ -1,30 +1,25 @@
 // @flow 
-import { Button, Card, CardContent, FormHelperText, makeStyles, Theme, useMediaQuery, useTheme } from '@material-ui/core';
+import {  Card, CardContent, FormHelperText, makeStyles, Theme, useMediaQuery, useTheme } from '@material-ui/core';
 import { Typography } from '@material-ui/core';
 import { Checkbox, FormControlLabel, Grid, TextField } from '@material-ui/core';
 import { useSnackbar } from 'notistack';
-import React, { createRef, MutableRefObject, useEffect, useRef, useState } from 'react';
+import React, { createRef, MutableRefObject, useContext, useEffect, useRef, useState } from 'react';
 import { useParams, useHistory } from 'react-router';
 import DefaultForm from '../../../components/DefaultForm';
-import InputFile, { InputFileComponent } from '../../../components/InputFile';
-import Rating from '../../../components/Rating';
+import { InputFileComponent } from '../../../components/InputFile';
 import SubmitActions from '../../../components/SubmitActions';
 import videoHttp from '../../../utils/http/video-http';
-import { Category, Genre, Video, VideoFileFieldsMap } from '../../../utils/models';
+import { Video, VideoFileFieldsMap } from '../../../utils/models';
 import * as yup from '../../../utils/vendor/yup';
 import RatingField from './RatingField';
-import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import UploadField from './UploadField';
-import AsyncAutocomplete from '../../../components/AsyncAutocomplete';
-import genreHttp from '../../../utils/http/genre-http';
-import GridSelected from '../../../components/GridSelected';
-import GridSelectedItem from '../../../components/GridSelectedItem';
-import useHttpHandled from '../../../hooks/useHttpHandled';
 import GenreField, { GenreFieldComponent } from './GenreField';
 import CategoryField, { CategoryFieldComponent } from './CategoryField';
 import useForm from 'react-hook-form';
 import CastMemberField, { CastMemberFieldComponent } from './CastMemberField';
 import { omit, zipObject } from 'lodash';
+import useSnackbarFormError from '../../../hooks/useSnackbarFormError';
+import LoadingContext from '../../../components/loading/LoadingContext';
 
 type FormData = {
     title: string;
@@ -109,7 +104,9 @@ const Form = () => {
         errors, 
         reset, 
         watch, 
-        triggerValidation} = useForm<FormData>({
+        triggerValidation, 
+        formState
+    } = useForm<FormData>({
             validationSchema,
             defaultValues: {
                 genres: [],
@@ -118,6 +115,8 @@ const Form = () => {
                 opened: false,
             }
         });
+
+    useSnackbarFormError(formState.submitCount, errors);
 
     const snackbar = useSnackbar();
     const history = useHistory();
@@ -131,6 +130,7 @@ const Form = () => {
     const categoryRef = useRef() as MutableRefObject<CategoryFieldComponent>;
     const uploadsRef = useRef(zipObject(fileFields, fileFields.map(() => createRef()))
     ) as MutableRefObject<{[key: string]: MutableRefObject<InputFileComponent>}>;
+    const testLoading = useContext(LoadingContext);
 
     useEffect(() => {
         [
