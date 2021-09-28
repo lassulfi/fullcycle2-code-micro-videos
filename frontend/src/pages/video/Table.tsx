@@ -1,5 +1,5 @@
 // @flow 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
 import { MUIDataTableMeta } from 'mui-datatables';
@@ -19,6 +19,7 @@ import { ServerSideFilteredListUtils } from '../../utils/server-side-filter-list
 import { union } from 'lodash';
 import DeleteDialog from '../../components/DeleteDialog';
 import useDeleteCollection from '../../hooks/useDeleteCollection';
+import LoadingContext from '../../components/loading/LoadingContext';
 
 const columnDefinition: TableColumn[] = [
     {
@@ -101,7 +102,7 @@ const Table = () => {
     const subscribed = useRef(true);
     const snackbar = useSnackbar();
     const [data, setData] = useState<Video[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
+    const loading = useContext(LoadingContext);
     const {openDeleteDialog, setOpenDeleteDialog, rowsToDelete, setRowsToDelete} = useDeleteCollection();
     const tableRef = useRef() as React.MutableRefObject<MuiDataTableRefComponent>;
     const {
@@ -134,7 +135,6 @@ const Table = () => {
     ]);
 
     async function getData() {
-        setLoading(true);
         try {
             const {data} = await videoHttp.list<ListResponse<Video>>({
                 queryParams: {
@@ -163,8 +163,6 @@ const Table = () => {
                     variant: 'error',
                 }
             )
-        } finally {
-            setLoading(false);
         }
     }
 

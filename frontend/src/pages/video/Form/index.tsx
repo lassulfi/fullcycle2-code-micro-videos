@@ -20,6 +20,7 @@ import CastMemberField, { CastMemberFieldComponent } from './CastMemberField';
 import { omit, zipObject } from 'lodash';
 import useSnackbarFormError from '../../../hooks/useSnackbarFormError';
 import LoadingContext from '../../../components/loading/LoadingContext';
+import SnackbarUpload from '../../../components/SnackbarUpload';
 
 type FormData = {
     title: string;
@@ -122,7 +123,7 @@ const Form = () => {
     const history = useHistory();
     const {id}: {id: string} = useParams();
     const [video, setVideo] = useState<Video | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
+    const loading = useContext(LoadingContext);
     const theme = useTheme();
     const isGreaterThenMd = useMediaQuery(theme.breakpoints.up('md'));
     const castMemberRef = useRef() as MutableRefObject<CastMemberFieldComponent>;
@@ -130,7 +131,6 @@ const Form = () => {
     const categoryRef = useRef() as MutableRefObject<CategoryFieldComponent>;
     const uploadsRef = useRef(zipObject(fileFields, fileFields.map(() => createRef()))
     ) as MutableRefObject<{[key: string]: MutableRefObject<InputFileComponent>}>;
-    const testLoading = useContext(LoadingContext);
 
     useEffect(() => {
         [
@@ -144,12 +144,23 @@ const Form = () => {
     }, [register]);
 
     useEffect(() => {
+        snackbar.enqueueSnackbar('', {
+            key: 'snackbar-upload',
+            persist: true,
+            anchorOrigin: {
+                vertical: 'bottom',
+                horizontal: 'right',
+            }, 
+            content: (key, message) => {
+                const id = key as any
+                return <SnackbarUpload id={id}/>
+            }
+        });
         if (!id) {
             return;
         }
         let isSubscribed = true;
         (async () => {
-            setLoading(true);
             try {
                 const {data} = await videoHttp.get(id);
                 if (isSubscribed) {
@@ -164,8 +175,6 @@ const Form = () => {
                         variant: 'error'
                     }
                 );
-            } finally {
-                setLoading(false);
             }
         })()
 
@@ -180,7 +189,6 @@ const Form = () => {
         sendData['genres_id'] = formData['genres'].map(genres => genres.id);  
         sendData['cast_members_id'] = formData['cast_members'].map(cast_members => cast_members.id);  
 
-        setLoading(true);
         try {
             const http = !video 
             ? videoHttp.create(sendData)
@@ -211,8 +219,6 @@ const Form = () => {
                     variant: 'error'
                 }
             );
-        } finally {
-            setLoading(false);
         }
     }
 

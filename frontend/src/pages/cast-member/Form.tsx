@@ -1,10 +1,11 @@
 // @flow 
 import { TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, FormHelperText } from '@material-ui/core';
 import { useSnackbar } from 'notistack';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import useForm from 'react-hook-form';
 import { useHistory, useParams } from 'react-router';
 import DefaultForm from '../../components/DefaultForm';
+import LoadingContext from '../../components/loading/LoadingContext';
 import SubmitActions from '../../components/SubmitActions';
 import castMemberHttp from '../../utils/http/cast-member-http';
 import { CastMember } from '../../utils/models';
@@ -40,8 +41,8 @@ const Form = () => {
     const history = useHistory();
     const {id}: CastMemberId = useParams();
     const [castMember, setCastMember] = useState<CastMember | null>(null)
-    const [loading, setLoading] = useState<boolean>(false);
-    
+    const loading = useContext(LoadingContext);
+
     useEffect(() => {
         register({name: 'type'})
     }, [register]);
@@ -52,7 +53,6 @@ const Form = () => {
         }
         let isSubscribed = true;
         (async () => {
-            setLoading(true);
             try {
                 const {data} = await castMemberHttp.get<{data: CastMember}>(id);
                 if (isSubscribed) {
@@ -67,8 +67,6 @@ const Form = () => {
                         variant: 'error',
                     }
                 )
-            } finally {
-                setLoading(false);
             }
         })();
 
@@ -78,7 +76,6 @@ const Form = () => {
     }, [])
 
     async function onSubmit (formData, event) {
-        setLoading(true);
         try {
             const http = !castMember
             ? castMemberHttp.create(formData)
@@ -107,8 +104,6 @@ const Form = () => {
                         variant: 'error'
                     }
                 );
-        } finally {
-            setLoading(false);
         }
     }
 
