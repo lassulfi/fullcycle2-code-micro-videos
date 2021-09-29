@@ -7,6 +7,7 @@ import GenreList from '../pages/genre/PageList';
 import GenreForm from '../pages/genre/PageForm';
 import VideoList from '../pages/video/PageList';
 import VideoForm from '../pages/video/PageForm';
+import UploadPage from '../pages/uploads';
 
 import Dashboard from "../pages/Dashboard";
 
@@ -95,6 +96,13 @@ const routes: MyRouteProps[] = [
         component: VideoForm,
         exact: true
     }, 
+    {
+        name: 'uploads',
+        label: 'Listar Uploads',
+        path: '/uploads',
+        component: UploadPage,
+        exact: true
+    },
 ];
 
 export default routes;
