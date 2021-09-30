@@ -21,6 +21,9 @@ import { omit, zipObject } from 'lodash';
 import useSnackbarFormError from '../../../hooks/useSnackbarFormError';
 import LoadingContext from '../../../components/loading/LoadingContext';
 import SnackbarUpload from '../../../components/SnackbarUpload';
+import { useDispatch, useSelector } from 'react-redux';
+import { State as UploadState, Upload } from '../../../store/upload/types';
+import { Creators } from '../../../store/upload';
 
 type FormData = {
     title: string;
@@ -131,6 +134,26 @@ const Form = () => {
     const categoryRef = useRef() as MutableRefObject<CategoryFieldComponent>;
     const uploadsRef = useRef(zipObject(fileFields, fileFields.map(() => createRef()))
     ) as MutableRefObject<{[key: string]: MutableRefObject<InputFileComponent>}>;
+
+    const uploads = useSelector<UploadState, Upload[]>(
+        state => state.uploads
+    );
+
+    const dispatch = useDispatch();
+
+    setTimeout(() => {
+        const obj: any = {
+            video: {
+                id: '1',
+                title: 'E o Vento Levou'
+            }, 
+            files: [
+                {file: new File([""], "teste.mp4")}
+            ]
+        }
+
+        dispatch(Creators.addUpload(obj));
+    }, 1000)
 
     useEffect(() => {
         [
