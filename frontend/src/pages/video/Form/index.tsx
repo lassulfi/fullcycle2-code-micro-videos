@@ -3,7 +3,7 @@ import {  Card, CardContent, FormHelperText, makeStyles, Theme, useMediaQuery, u
 import { Typography } from '@material-ui/core';
 import { Checkbox, FormControlLabel, Grid, TextField } from '@material-ui/core';
 import { useSnackbar } from 'notistack';
-import React, { createRef, MutableRefObject, useContext, useEffect, useRef, useState } from 'react';
+import React, { createRef, MutableRefObject, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useHistory } from 'react-router';
 import DefaultForm from '../../../components/DefaultForm';
 import { InputFileComponent } from '../../../components/InputFile';
@@ -141,19 +141,44 @@ const Form = () => {
 
     const dispatch = useDispatch();
 
-    setTimeout(() => {
-        const obj: any = {
-            video: {
-                id: '1',
-                title: 'E o Vento Levou'
-            }, 
-            files: [
-                {file: new File([""], "teste.mp4")}
-            ]
-        }
+    useMemo(() => {
+        setTimeout(() => {
+            const obj: any = {
+                video: {
+                    id: '1',
+                    title: 'E o Vento Levou'
+                }, 
+                files: [
+                    {
+                        file: new File([""], "teste.mp4"),
+                        fileField: 'trailer_mp4',
+                    },
+                    {
+                        file: new File([""], "teste.mp4"),
+                        fileField: 'video_mp4',
+                    }
+                ]
+            }
+    
+            dispatch(Creators.addUpload(obj));
+            const progress1 = {
+                fileField: 'trailer_file',
+                progress: 10,
+                video: { id: '1' }
+            } as any;
+            dispatch(Creators.updateProgress(progress1));
+            const progress2 = {
+                fileField: 'video_file',
+                progress: 20,
+                video: { id: 1 }
+            } as any;
+            dispatch(Creators.updateProgress(progress2));
+        }, 1000)
+    }, [true]);
+    
+    console.log(uploads);
 
-        dispatch(Creators.addUpload(obj));
-    }, 1000)
+    
 
     useEffect(() => {
         [
