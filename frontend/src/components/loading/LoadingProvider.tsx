@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import LoadingContext from './LoadingContext';
 import { addGlobalRequestInterceptors, addGlobalResponseInterceptors, removeGlobalRequestInterceptors, removeGlobalResponseInterceptors } from '../../utils/http';
+import { omit } from 'lodash';
 
 const LoadingProvider = (props) => {
     const [loading, setLoading] = useState<boolean>(false);
@@ -10,10 +11,11 @@ const LoadingProvider = (props) => {
     useMemo(() => {
         let isSubscribed = true;
         const requestIds = addGlobalRequestInterceptors(config => {
-            if(isSubscribed) {
+            if(isSubscribed && !config.headers.hasOwnProperty('ignoreLoading')) {
                 setLoading(true);
                 setCountRequest((prevCountRequest) => prevCountRequest + 1);
             }
+            config.headers = omit(config.headers, 'ignoreLoading');
             return config;
         });
         // axios.interceptors.request.use();
