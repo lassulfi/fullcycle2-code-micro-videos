@@ -3,6 +3,8 @@ import React from 'react';
 import { Divider, ListItem, ListItemIcon, ListItemText, makeStyles, Theme, Tooltip, Typography } from '@material-ui/core';
 import MovieIcon from '@material-ui/icons/Movie';
 import UploadProgress from '../UploadProgress';
+import { Upload } from '../../store/upload/types';
+import UploadAction from './UploadAction';
 
 const useStyles = makeStyles((theme: Theme) => ({
     listItem: {
@@ -22,10 +24,11 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 type UploadItemProps = {
-
+    upload: Upload;
 };
 
 const UploadItem: React.FC<UploadItemProps> = (props) => {
+    const { upload } = props;
     const classes = useStyles();
     return (
         <>
@@ -44,11 +47,12 @@ const UploadItem: React.FC<UploadItemProps> = (props) => {
                         className={classes.listItemText}
                         primary={
                             <Typography noWrap={true} variant="subtitle2" color="inherit">
-                                E o Vento Levou
+                                {upload.video.title}
                             </Typography>
                         }
                     />
-                    <UploadProgress size={30}/>
+                    <UploadProgress size={30} uploadOrFile={upload}/>
+                    <UploadAction upload={upload}/>
                 </ListItem>
             </Tooltip>
             <Divider component="li" />

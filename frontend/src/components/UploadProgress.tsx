@@ -2,7 +2,7 @@
 import { CircularProgress, Fade, makeStyles, Theme } from '@material-ui/core';
 import { grey } from '@material-ui/core/colors';
 import React from 'react';
-import UploadAction from './SnackbarUpload/UploadAction';
+import { FileUpload, Upload } from '../store/upload/types';
 
 const useStyles = makeStyles((theme: Theme) => ({
     progressContainer: {
@@ -18,14 +18,15 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 type UploadProgressProps = {
+    uploadOrFile: Upload | FileUpload;
     size: number;
 };
 
 const UploadProgress: React.FC<UploadProgressProps> = (props) => {
     const classes = useStyles();
-    const { size } = props;
+    const { uploadOrFile, size } = props;
     return (
-        <Fade in={true} timeout={{enter: 100, exit: 2000}}>
+        <Fade in={uploadOrFile.progress < 1} timeout={{enter: 100, exit: 2000}}>
             <div className={classes.progressContainer}>
                 <CircularProgress
                     variant="static"
@@ -35,11 +36,10 @@ const UploadProgress: React.FC<UploadProgressProps> = (props) => {
                 />
                 <CircularProgress
                     className={classes.progress}
-                    value={50}
+                    value={uploadOrFile.progress * 100}
                     variant="static"
                     size={size}
                 />
-                <UploadAction />
             </div>
         </Fade>
     );
