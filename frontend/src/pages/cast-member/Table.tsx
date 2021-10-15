@@ -6,8 +6,9 @@ import parseISO from 'date-fns/parseISO';
 import { invert } from 'lodash';
 import { MUIDataTableMeta } from 'mui-datatables';
 import { useSnackbar } from 'notistack';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import LoadingContext from '../../components/loading/LoadingContext';
 import DefaultTable, { makeActionStyles, MuiDataTableRefComponent, TableColumn } from '../../components/Table';
 import FilterResetButton from '../../components/Table/FilterResetButton';
 import useFilter from '../../hooks/useFilter';
@@ -87,7 +88,7 @@ const Table = () => {
     const snackbar = useSnackbar();
     const subscribed = useRef(true);
     const [data, setData] = useState<CastMember[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
+    const loading = useContext(LoadingContext);
     const tableRef = useRef() as React.MutableRefObject<MuiDataTableRefComponent>;
     const {
         columns,
@@ -157,7 +158,6 @@ const Table = () => {
     ]);
 
     async function getData() {
-        setLoading(true);
         try {
             const {data} = await castMemberHttp.list<ListResponse<CastMember>>({
                 queryParams: {
@@ -188,8 +188,6 @@ const Table = () => {
                     variant: 'error'
                 }
             );
-        } finally {
-            setLoading(false);
         }
     }
 

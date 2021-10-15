@@ -3,7 +3,7 @@ import { IconButton, MuiThemeProvider } from '@material-ui/core';
 import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
 import { MUIDataTableMeta } from 'mui-datatables';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BadgeNo, BadgeYes } from '../../components/Navbar/Badge';
 import DefaultTable, { makeActionStyles, MuiDataTableRefComponent, TableColumn } from '../../components/Table';
@@ -15,6 +15,7 @@ import useFilter from '../../hooks/useFilter';
 import * as yup from '../../utils/vendor/yup';
 import categoryHttp from '../../utils/http/category-http';
 import FilterResetButton from '../../components/Table/FilterResetButton';
+import LoadingContext from '../../components/loading/LoadingContext';
 
 const columnsDefinition: TableColumn[] = [
     {
@@ -99,7 +100,7 @@ const Table = () => {
     const snackbar = useSnackbar();
     const subscribed = useRef(true);
     const [data, setData] = useState<Genre[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
+    const loading = useContext(LoadingContext);
     const [categories, setCategories] = useState<Category[]>();
     const tableRef = useRef() as React.MutableRefObject<MuiDataTableRefComponent>;
     const {
@@ -200,7 +201,6 @@ const Table = () => {
     ]);
 
     async function getData() {
-        setLoading(true);
             try {
                 const {data} = await genreHttp.list<ListResponse<Genre>>({
                     queryParams: {
@@ -231,8 +231,6 @@ const Table = () => {
                         variant: 'error'
                     }
                 );
-            } finally {
-                setLoading(false);
             }
     }
 

@@ -1,10 +1,11 @@
 // @flow 
 import { MenuItem, TextField} from '@material-ui/core';
 import { useSnackbar } from 'notistack';
-import React, { useState, useEffect } from 'react';
-import useForm from 'react-hook-form';
+import React, { useState, useEffect, useContext } from 'react';
+import { useForm } from 'react-hook-form';
 import { useHistory, useParams } from 'react-router';
 import DefaultForm from '../../components/DefaultForm';
+import LoadingContext from '../../components/loading/LoadingContext';
 import SubmitActions from '../../components/SubmitActions';
 import categoryHttp from '../../utils/http/category-http';
 import genreHttp from '../../utils/http/genre-http';
@@ -46,7 +47,7 @@ const Form = () => {
     const [categories, setCategories] = useState<Category[]>([])
     const [genre, setGenre] = useState<Genre | null>(null);
     const {id}:GenreId = useParams();
-    const [loading, setLoading] = useState<boolean>(false);
+    const loading = useContext(LoadingContext);
 
     useEffect(() => {
         register({name: 'categories_id'})
@@ -55,7 +56,6 @@ const Form = () => {
     useEffect(() => {
         let isSubscribed = true;
         (async () => {
-            setLoading(true);
             const promises = [categoryHttp.list({queryParams: {all: ''}})];
             if (id) {
                 promises.push(genreHttp.get(id));
@@ -81,8 +81,6 @@ const Form = () => {
                         variant: 'error'
                     }
                 );
-            } finally {
-                setLoading(false);
             }
         })();
 
@@ -92,7 +90,6 @@ const Form = () => {
     }, [id, reset]);
 
     async function onSubmit (formData, event) {
-        setLoading(true)
         try {
             const http = !genre
             ? genreHttp.create(formData)
@@ -121,8 +118,6 @@ const Form = () => {
                     variant: 'error'
                 }
             );
-        } finally {
-            setLoading(false);
         }
     };
 

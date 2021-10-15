@@ -1,7 +1,7 @@
 // @flow 
 import { IconButton, MuiThemeProvider } from '@material-ui/core';
 import { MUIDataTableMeta } from 'mui-datatables';
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
 import categoryHttp from '../../utils/http/category-http';
@@ -13,11 +13,12 @@ import { useSnackbar } from 'notistack';
 import FilterResetButton from '../../components/Table/FilterResetButton';
 import useFilter from '../../hooks/useFilter';
 import { BadgeNo, BadgeYes } from '../../components/Navbar/Badge';
+import LoadingContext from '../../components/loading/LoadingContext';
 
 const columnsDefinition: TableColumn[] = [
     {
         name: 'id',
-        label: 'ID', 
+        label: 'ID',
         width: '30%',
         options: {
             sort: false,
@@ -56,7 +57,7 @@ const columnsDefinition: TableColumn[] = [
     }, {
         name: 'actions',
         label: 'Ações',
-        width: '13%', 
+        width: '13%',
         options: {
             sort: false,
             filter: false,
@@ -67,7 +68,7 @@ const columnsDefinition: TableColumn[] = [
                         component={Link}
                         to={`/categories/${tableMeta.rowData[0]}/edit`}
                     >
-                        <EditIcon/>
+                        <EditIcon />
                     </IconButton>
                 )
             }
@@ -84,7 +85,7 @@ const Table = () => {
     const snackbar = useSnackbar();
     const subscribed = useRef(true);
     const [data, setData] = useState<Category[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
+    const loading = useContext(LoadingContext);
     const tableRef = useRef() as React.MutableRefObject<MuiDataTableRefComponent>;
     const {
         columns,
@@ -100,7 +101,7 @@ const Table = () => {
         rowsPerPageOptions,
         tableRef,
     });
-  
+
     useEffect(() => {
         subscribed.current = true;
         filterManager.pushHistory();
@@ -116,66 +117,63 @@ const Table = () => {
     ]);
 
     async function getData() {
-        setLoading(true);
-            try {
-                const {data} = await categoryHttp.list<ListResponse<Category>>({
-                    queryParams: {
-                        search: filterManager.cleanSearchText(debouncedFilterState.search),
-                        page: debouncedFilterState.pagination.page,
-                        per_page: debouncedFilterState.pagination.per_page,
-                        sort: debouncedFilterState.order.sort,
-                        dir: debouncedFilterState.order.dir,
-                    }
-                });
-                if (subscribed.current) {
-                    setData(data.data);
-                    setTotalRecords(data.meta.total);
+        try {
+            const { data } = await categoryHttp.list<ListResponse<Category>>({
+                queryParams: {
+                    search: filterManager.cleanSearchText(debouncedFilterState.search),
+                    page: debouncedFilterState.pagination.page,
+                    per_page: debouncedFilterState.pagination.per_page,
+                    sort: debouncedFilterState.order.sort,
+                    dir: debouncedFilterState.order.dir,
                 }
-            } catch (error) {
-                console.error(error);
-                if (categoryHttp.isRequestCancelled(error)) {
-                    return;
-                }
-                snackbar.enqueueSnackbar(
-                    'Não foi possível carregar as informações',
-                    {
-                        variant: 'error'
-                    }
-                );
-            } finally {
-                setLoading(false);
+            });
+            if (subscribed.current) {
+                setData(data.data);
+                setTotalRecords(data.meta.total);
             }
+        } catch (error) {
+            console.error(error);
+            if (categoryHttp.isRequestCancelled(error)) {
+                return;
+            }
+            snackbar.enqueueSnackbar(
+                'Não foi possível carregar as informações',
+                {
+                    variant: 'error'
+                }
+            );
+        }
     }
 
     return (
         <MuiThemeProvider theme={makeActionStyles(columnsDefinition.length - 1)}>
-                    <DefaultTable 
-                        title=""
-                        data={data}
-                        columns={columns}
-                        loading={loading}
-                        debouncedSearchTime={debouncedSearchTime}
-                        options={{
-                            serverSide: true,
-                            responsive: 'scrollMaxHeight',
-                            searchText: filterState.search as any,
-                            page: filterState.pagination.page - 1,
-                            rowsPerPage: filterState.pagination.per_page,
-                            rowsPerPageOptions,
-                            count: totalRecords,
-                            customToolbar: () => (
-                                <FilterResetButton 
-                                    handleClick={() => filterManager.resetFilter()}
-                                />
-                                ),
-                            onSearchChange: (value) => filterManager.changeSearch(value),
-                            onChangePage: (page) => filterManager.changePage(page),
-                            onChangeRowsPerPage: (perPage) => filterManager.changeRowsPerPage(perPage),
-                            onColumnSortChange: (changeColumn: string, direction: string) => 
-                                filterManager.changeColumnSort(changeColumn, direction)
-                        }}
-                    />
-                </MuiThemeProvider>
+            <DefaultTable
+                title=""
+                data={data}
+                columns={columns}
+                loading={loading}
+                debouncedSearchTime={debouncedSearchTime}
+                options={{
+                    serverSide: true,
+                    responsive: 'scrollMaxHeight',
+                    searchText: filterState.search as any,
+                    page: filterState.pagination.page - 1,
+                    rowsPerPage: filterState.pagination.per_page,
+                    rowsPerPageOptions,
+                    count: totalRecords,
+                    customToolbar: () => (
+                        <FilterResetButton
+                            handleClick={() => filterManager.resetFilter()}
+                        />
+                    ),
+                    onSearchChange: (value) => filterManager.changeSearch(value),
+                    onChangePage: (page) => filterManager.changePage(page),
+                    onChangeRowsPerPage: (perPage) => filterManager.changeRowsPerPage(perPage),
+                    onColumnSortChange: (changeColumn: string, direction: string) =>
+                        filterManager.changeColumnSort(changeColumn, direction)
+                }}
+            />
+        </MuiThemeProvider>
     );
 };
 

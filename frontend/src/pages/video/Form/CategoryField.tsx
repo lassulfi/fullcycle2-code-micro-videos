@@ -1,5 +1,5 @@
 // @flow 
-import { FormControl, FormControlProps, FormHelperText, makeStyles, Theme, Typography } from '@material-ui/core';
+import { FormControl, FormControlProps, FormHelperText, makeStyles, Theme, Typography, useTheme } from '@material-ui/core';
 import { grey } from '@material-ui/core/colors';
 import React, { MutableRefObject, useImperativeHandle, useRef } from 'react';
 import AsyncAutocomplete, { AsyncAutocompleteComponent } from '../../../components/AsyncAutocomplete';
@@ -37,6 +37,7 @@ const CategoryField = React.forwardRef<CategoryFieldComponent, CategoryFieldProp
     const autocompleteHttp = useHttpHandled();
     const {addItem, removeItem} = useCollectionManager(categories, setCategories);
     const autocompleteRef = useRef() as MutableRefObject<AsyncAutocompleteComponent>;
+    const theme = useTheme();
 
     function fetchOptions (searchText) {
         return autocompleteHttp(
@@ -73,6 +74,9 @@ const CategoryField = React.forwardRef<CategoryFieldComponent, CategoryFieldProp
                     error: error !== undefined,
                 }}
             />
+            <FormHelperText style={{height: theme.spacing(3)}}>
+                Escolha pelo menos uma categoria de cada gênero
+            </FormHelperText>
             <FormControl
                 margin="normal"
                 fullWidth

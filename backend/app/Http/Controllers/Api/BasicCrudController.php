@@ -96,11 +96,29 @@ abstract class BasicCrudController extends Controller
     {
         $obj = $this->findOrFail($id);
 
-        $validatedData = $this->validate($request, $this->ruleUpdate());
+        $validatedData = $this->validate(
+            $request,
+            $request->isMethod('PUT') ? $this->ruleUpdate() : $this->rulePatch()
+        );
         $obj->update($validatedData);
         $resource = $this->resource();
 
         return new $resource($obj);
+    }
+
+    protected function rulePatch()
+    {
+        return array_map(function($rules) {
+            if(is_array($rules)) {
+                $exists = in_array("required", $rules);
+                if($exists) {
+                    array_unshift($rules, "sometimes");
+                }
+            } else {
+                return str_replace("required", "sometimes|required", $rules);
+            }
+            return $rules;
+        }, $this->ruleUpdate());
     }
 
     /**
@@ -114,6 +132,28 @@ abstract class BasicCrudController extends Controller
         $obj = $this->findOrFail($id);
         $obj->delete();
         return response()->noContent();
+    }
+
+    public function destroyCollection(Request $request)
+    {
+        $data = $this->validateIds($request);
+        $this->model()::whereIn('id', $data['ids'])->delete();
+
+        return response()->noContent();
+    }
+
+    protected function validateIds(Request $request)
+    {
+        $model = $this->model();
+        $ids = explode(',', $request->get('ids'));
+        $validator = \Validator::make(
+            [ 'ids' => $ids ],
+            [
+                'ids' => 'required|exists:' . (new $model)->getTable() . ',id'
+            ]
+        );
+
+        return $validator->validate();
     }
 
     protected function queryBuilder(): Builder

@@ -1,11 +1,11 @@
 // @flow 
 import { Checkbox, FormControlLabel, Grid, TextField } from '@material-ui/core';
 import { useSnackbar } from 'notistack';
-import * as React from 'react';
-import { useEffect, useState } from 'react';
-import useForm from 'react-hook-form';
+import React, { useContext, useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { useParams, useHistory } from 'react-router';
 import DefaultForm from '../../components/DefaultForm';
+import LoadingContext from '../../components/loading/LoadingContext';
 import SubmitActions from '../../components/SubmitActions';
 import categoryHttp from '../../utils/http/category-http';
 import { Category } from '../../utils/models';
@@ -47,7 +47,7 @@ const Form = () => {
     const history = useHistory();
     const {id}: CategoryId = useParams();
     const [category, setCategory] = useState<Category | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
+    const loading = useContext(LoadingContext);
 
     useEffect(() => {
         register({name: 'is_active'})
@@ -59,7 +59,6 @@ const Form = () => {
         }
         let isSubscribed = true;
         (async () => {
-            setLoading(true);
             try {
                 const {data} = await categoryHttp.get<{data: Category}>(id);
                 if (isSubscribed) {
@@ -74,8 +73,6 @@ const Form = () => {
                         variant: 'error'
                     }
                 );
-            } finally {
-                setLoading(false);
             }
         })()
 
@@ -85,7 +82,6 @@ const Form = () => {
     }, []);
 
     async function onSubmit(formData, event) {
-        setLoading(true);
         try {
             const http = !category 
             ? categoryHttp.create(formData)
@@ -114,8 +110,6 @@ const Form = () => {
                     variant: 'error'
                 }
             );
-        } finally {
-            setLoading(false);
         }
     }
 
