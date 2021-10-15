@@ -2,7 +2,7 @@
 import { Checkbox, FormControlLabel, Grid, TextField } from '@material-ui/core';
 import { useSnackbar } from 'notistack';
 import React, { useContext, useEffect, useState } from 'react';
-import useForm from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { useParams, useHistory } from 'react-router';
 import DefaultForm from '../../components/DefaultForm';
 import LoadingContext from '../../components/loading/LoadingContext';

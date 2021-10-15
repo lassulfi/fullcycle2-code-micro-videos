@@ -1,10 +1,11 @@
 // @flow 
-import React from 'react';
+import React, { useState } from 'react';
 import { Divider, ListItem, ListItemIcon, ListItemText, makeStyles, Theme, Tooltip, Typography } from '@material-ui/core';
 import MovieIcon from '@material-ui/icons/Movie';
 import UploadProgress from '../UploadProgress';
 import { Upload } from '../../store/upload/types';
 import UploadAction from './UploadAction';
+import { hasError } from '../../store/upload/getters';
 
 const useStyles = makeStyles((theme: Theme) => ({
     listItem: {
@@ -30,15 +31,22 @@ type UploadItemProps = {
 const UploadItem: React.FC<UploadItemProps> = (props) => {
     const { upload } = props;
     const classes = useStyles();
+    const error = hasError(upload);
+    const [itemHover, setItemHover] = useState(false);
+
     return (
         <>
             <Tooltip
-                title="Não foi possível fazer o upload. Clique para saber mais detalhes."
+                disableFocusListener
+                disableTouchListener
+                title={error ? "Não foi possível fazer o upload. Clique para saber mais detalhes.": ""}
                 placement="left"
             >
                 <ListItem
                     className={classes.listItem}
                     button
+                    onMouseOver={() => setItemHover(true)}
+                    onMouseLeave={() => setItemHover(false)}
                 >
                     <ListItemIcon className={classes.movieIcon}>
                         <MovieIcon />
@@ -52,7 +60,7 @@ const UploadItem: React.FC<UploadItemProps> = (props) => {
                         }
                     />
                     <UploadProgress size={30} uploadOrFile={upload}/>
-                    <UploadAction upload={upload}/>
+                    <UploadAction upload={upload} hover={itemHover}/>
                 </ListItem>
             </Tooltip>
             <Divider component="li" />

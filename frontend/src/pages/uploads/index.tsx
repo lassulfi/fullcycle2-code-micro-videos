@@ -1,5 +1,5 @@
 // @flow 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Card, CardContent, Divider, ExpansionPanel, ExpansionPanelDetails, ExpansionPanelSummary, Grid, List, makeStyles, Theme, Typography } from '@material-ui/core';
 import { Page } from '../../components/Page';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -25,42 +25,6 @@ const Uploads = (props) => {
     const uploads = useSelector<UploadModule, Upload[]>(
         (state) => state.upload.uploads
     );
-    const dispatch = useDispatch();
-
-    useMemo(() => {
-        setTimeout(() => {
-            const obj: any = {
-                video: {
-                    id: '1',
-                    title: 'E o Vento Levou'
-                }, 
-                files: [
-                    {
-                        file: new File([""], "teste.mp4"),
-                        fileField: 'trailer_mp4',
-                    },
-                    {
-                        file: new File([""], "teste.mp4"),
-                        fileField: 'video_mp4',
-                    }
-                ]
-            }
-    
-            dispatch(Creators.addUpload(obj));
-            const progress1 = {
-                fileField: 'trailer_file',
-                progress: 10,
-                video: { id: '1' }
-            } as any;
-            dispatch(Creators.updateProgress(progress1));
-            const progress2 = {
-                fileField: 'video_file',
-                progress: 20,
-                video: { id: 1 }
-            } as any;
-            dispatch(Creators.updateProgress(progress2));
-        }, 1000)
-    }, [true]);
 
     return (
         <Page title="Uploads">

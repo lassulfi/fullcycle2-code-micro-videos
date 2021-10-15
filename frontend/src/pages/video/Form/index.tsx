@@ -15,14 +15,14 @@ import RatingField from './RatingField';
 import UploadField from './UploadField';
 import GenreField, { GenreFieldComponent } from './GenreField';
 import CategoryField, { CategoryFieldComponent } from './CategoryField';
-import useForm from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import CastMemberField, { CastMemberFieldComponent } from './CastMemberField';
 import { omit, zipObject } from 'lodash';
 import useSnackbarFormError from '../../../hooks/useSnackbarFormError';
 import LoadingContext from '../../../components/loading/LoadingContext';
 import SnackbarUpload from '../../../components/SnackbarUpload';
 import { useDispatch, useSelector } from 'react-redux';
-import { UploadState, UploadModule, Upload } from '../../../store/upload/types';
+import { UploadState, UploadModule, Upload, FileInfo } from '../../../store/upload/types';
 import { Creators } from '../../../store/upload';
 
 type FormData = {
@@ -92,7 +92,7 @@ const validationSchema = yup.object().shape({
     categories: yup.array()
         .label('Categorias')
         .required(),
-    castMembers: yup.array()
+    cast_members: yup.array()
         .label('Membros de Elenco')
         .required(),
 });
@@ -141,45 +141,6 @@ const Form = () => {
 
     const dispatch = useDispatch();
 
-    useMemo(() => {
-        setTimeout(() => {
-            const obj: any = {
-                video: {
-                    id: '1',
-                    title: 'E o Vento Levou'
-                }, 
-                files: [
-                    {
-                        file: new File([""], "teste.mp4"),
-                        fileField: 'trailer_mp4',
-                    },
-                    {
-                        file: new File([""], "teste.mp4"),
-                        fileField: 'video_mp4',
-                    }
-                ]
-            }
-    
-            dispatch(Creators.addUpload(obj));
-            const progress1 = {
-                fileField: 'trailer_file',
-                progress: 10,
-                video: { id: '1' }
-            } as any;
-            dispatch(Creators.updateProgress(progress1));
-            const progress2 = {
-                fileField: 'video_file',
-                progress: 20,
-                video: { id: 1 }
-            } as any;
-            dispatch(Creators.updateProgress(progress2));
-        }, 1000)
-    }, [true]);
-    
-    console.log(uploads);
-
-    
-
     useEffect(() => {
         [
             'rating', 
@@ -192,18 +153,6 @@ const Form = () => {
     }, [register]);
 
     useEffect(() => {
-        snackbar.enqueueSnackbar('', {
-            key: 'snackbar-upload',
-            persist: true,
-            anchorOrigin: {
-                vertical: 'bottom',
-                horizontal: 'right',
-            }, 
-            content: (key, message) => {
-                const id = key as any
-                return <SnackbarUpload id={id}/>
-            }
-        });
         if (!id) {
             return;
         }
@@ -232,7 +181,9 @@ const Form = () => {
     }, []);
 
     async function onSubmit(formData, event) {
-        const sendData = omit(formData, ['cast_members', 'genres', 'categories'])
+        const sendData = omit(formData, 
+            [...fileFields, 'cast_members', 'genres', 'categories']
+        );
         sendData['categories_id'] = formData['categories'].map(category => category.id);  
         sendData['genres_id'] = formData['genres'].map(genres => genres.id);  
         sendData['cast_members_id'] = formData['cast_members'].map(cast_members => cast_members.id);  
@@ -240,8 +191,7 @@ const Form = () => {
         try {
             const http = !video 
             ? videoHttp.create(sendData)
-            : videoHttp.update(video.id, {...sendData, _method: 'PUT'}, 
-            {http: {usePost: true}});
+            : videoHttp.update(video.id, sendData);
             const {data} = await http;
             snackbar.enqueueSnackbar(
                 'Video salvo com sucesso',
@@ -249,6 +199,7 @@ const Form = () => {
                     variant: 'success'
                 }
             );
+            uploadFiles(data.data);
             id && resetForm(video);
             setTimeout(() => {
                 event 
@@ -278,6 +229,31 @@ const Form = () => {
         genreRef.current.clear();
         categoryRef.current.clear();
         reset(data);
+    }
+
+    function uploadFiles(video) {
+        const files: FileInfo[] = fileFields
+            .filter(fileField => getValues()[fileField])
+            .map(fileField => ({fileField, file: getValues()[fileField]}));
+
+        if (!files.length) {
+            return;
+        }
+
+        dispatch(Creators.addUpload({video, files}));
+
+        snackbar.enqueueSnackbar('', {
+            key: 'snackbar-upload',
+            persist: true,
+            anchorOrigin: {
+                vertical: 'bottom',
+                horizontal: 'right'
+            },
+            content: (key, message) => {
+                const id = key as any;
+                return <SnackbarUpload id={id} />;
+            }
+        });
     }
 
     return (
@@ -371,17 +347,6 @@ const Form = () => {
                                 error={errors.categories}
                                 disabled={loading}
                             />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <FormHelperText>
-                                Escolha os gêneros de vídeos
-                            </FormHelperText>
-                            <FormHelperText>
-                                Escolha pelo menos uma categoria de cada gênero
-                            </FormHelperText>
-                            <FormHelperText>
-                                Escolha pelo menos um membro de elenco
-                            </FormHelperText>
                         </Grid>
                     </Grid>
                 </Grid>

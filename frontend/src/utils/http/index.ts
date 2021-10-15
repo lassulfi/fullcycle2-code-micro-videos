@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 export const httpVideo = axios.create({
     baseURL: process.env.REACT_APP_MICRO_VIDEO_API_URL
@@ -8,7 +8,7 @@ const instances = [httpVideo];
 
 export function addGlobalRequestInterceptors(
     onFulfilled?: (value: AxiosRequestConfig) => AxiosRequestConfig | Promise<AxiosRequestConfig>, 
-    onRejected?: (error: any) => any
+    onRejected?: (error: AxiosError) => any
 ) {
     const ids: number[] = [];
     for(let i of instances) {

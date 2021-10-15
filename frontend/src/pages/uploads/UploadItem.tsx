@@ -55,8 +55,8 @@ const UploadItem: React.FC<UploadItemProps> = (props) => {
                         alignItems="center"
                         justify="flex-end"
                     >
-                        <UploadProgress size={48} uploadOrFile={uploadOrFile}/>
-                        <UploadAction uploadOrFile={uploadOrFile}/>
+                        <UploadProgress size={48} uploadOrFile={uploadOrFile} />
+                        <UploadAction uploadOrFile={uploadOrFile} />
                     </Grid>
                 </Grid>
             </Grid>
