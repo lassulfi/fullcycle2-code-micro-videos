@@ -7,16 +7,11 @@ import DefaultTable, { makeActionStyles, MuiDataTableRefComponent, TableColumn }
 import { IconButton, MuiThemeProvider } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import EditIcon from '@material-ui/icons/Edit'
-import { Category, Genre, ListResponse, Video } from '../../utils/models';
+import { ListResponse, Video } from '../../utils/models';
 import videoHttp from '../../utils/http/video-http';
 import { useSnackbar } from 'notistack';
-import categoryHttp from '../../utils/http/category-http';
 import useFilter from '../../hooks/useFilter';
-import * as yup from '../../utils/vendor/yup';
 import FilterResetButton from '../../components/Table/FilterResetButton';
-import genreHttp from '../../utils/http/genre-http';
-import { ServerSideFilteredListUtils } from '../../utils/server-side-filter-list';
-import { union } from 'lodash';
 import DeleteDialog from '../../components/DeleteDialog';
 import useDeleteCollection from '../../hooks/useDeleteCollection';
 import LoadingContext from '../../components/loading/LoadingContext';
@@ -106,7 +101,6 @@ const Table = () => {
     const {openDeleteDialog, setOpenDeleteDialog, rowsToDelete, setRowsToDelete} = useDeleteCollection();
     const tableRef = useRef() as React.MutableRefObject<MuiDataTableRefComponent>;
     const {
-        columns, 
         filterManager,
         filterState,
         debouncedFilterState,
