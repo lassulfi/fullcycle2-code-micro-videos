@@ -59,6 +59,13 @@ services:
         networks:
             - app-network
 
+    selenium:
+        image: selenium/standalone-chrome
+        expose:
+            - 4444
+        networks:
+            - app-network
+
 networks:
     app-network:
         driver: bridge
