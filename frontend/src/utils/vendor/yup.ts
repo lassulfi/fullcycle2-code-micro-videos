@@ -1,3 +1,4 @@
+/* eslint-disable no-template-curly-in-string */
 import {LocaleObject, setLocale} from 'yup';
 
 const ptBR: LocaleObject = {

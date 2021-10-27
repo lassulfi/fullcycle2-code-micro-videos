@@ -1,5 +1,5 @@
 // @flow 
-import { CircularProgress, Fade, makeStyles, Theme } from '@material-ui/core';
+import { CircularProgress, Fade, makeStyles } from '@material-ui/core';
 import { grey } from '@material-ui/core/colors';
 import React from 'react';
 import { hasError } from '../store/upload/getters';

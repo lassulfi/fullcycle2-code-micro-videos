@@ -1,7 +1,7 @@
 // @flow 
 import { FormControl, FormControlProps, FormHelperText, makeStyles, Theme, Typography, useTheme } from '@material-ui/core';
 import { grey } from '@material-ui/core/colors';
-import React, { MutableRefObject, useImperativeHandle, useRef } from 'react';
+import React, { MutableRefObject, useCallback, useImperativeHandle, useRef } from 'react';
 import AsyncAutocomplete, { AsyncAutocompleteComponent } from '../../../components/AsyncAutocomplete';
 import GridSelected from '../../../components/GridSelected';
 import GridSelectedItem from '../../../components/GridSelectedItem';
@@ -39,7 +39,7 @@ const CategoryField = React.forwardRef<CategoryFieldComponent, CategoryFieldProp
     const autocompleteRef = useRef() as MutableRefObject<AsyncAutocompleteComponent>;
     const theme = useTheme();
 
-    function fetchOptions (searchText) {
+    const fetchOptions = useCallback((searchText) => {
         return autocompleteHttp(
             categoryHttp
                 .list({
@@ -50,7 +50,7 @@ const CategoryField = React.forwardRef<CategoryFieldComponent, CategoryFieldProp
                 })
         )
             .then(data => data.data)
-    }
+    }, [autocompleteHttp, genres]);
 
     useImperativeHandle(ref, () => ({
         clear: () => autocompleteRef.current.clear()

@@ -1,7 +1,7 @@
 // @flow 
 import { IconButton, MuiThemeProvider } from '@material-ui/core';
 import { MUIDataTableMeta } from 'mui-datatables';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
 import categoryHttp from '../../utils/http/category-http';
@@ -82,7 +82,7 @@ const rowsPerPage = 15;
 const rowsPerPageOptions = [15, 25, 50];
 
 const Table = () => {
-    const snackbar = useSnackbar();
+    const {enqueueSnackbar} = useSnackbar();
     const subscribed = useRef(true);
     const [data, setData] = useState<Category[]>([]);
     const loading = useContext(LoadingContext);
@@ -90,6 +90,7 @@ const Table = () => {
     const {
         columns,
         filterManager,
+        cleanSearchText,
         filterState,
         debouncedFilterState,
         totalRecords,
@@ -101,30 +102,17 @@ const Table = () => {
         rowsPerPageOptions,
         tableRef,
     });
+    const searchText = cleanSearchText(debouncedFilterState.search);
 
-    useEffect(() => {
-        subscribed.current = true;
-        filterManager.pushHistory();
-        getData();
-        return () => {
-            subscribed.current = false;
-        }
-    }, [
-        filterManager.cleanSearchText(debouncedFilterState.search),
-        debouncedFilterState.pagination.page,
-        debouncedFilterState.pagination.per_page,
-        debouncedFilterState.order
-    ]);
-
-    async function getData() {
+    const getData = useCallback(async ({search, page, per_page, sort, dir}) => {
         try {
             const { data } = await categoryHttp.list<ListResponse<Category>>({
                 queryParams: {
-                    search: filterManager.cleanSearchText(debouncedFilterState.search),
-                    page: debouncedFilterState.pagination.page,
-                    per_page: debouncedFilterState.pagination.per_page,
-                    sort: debouncedFilterState.order.sort,
-                    dir: debouncedFilterState.order.dir,
+                    search,
+                    page,
+                    per_page,
+                    sort,
+                    dir,
                 }
             });
             if (subscribed.current) {
@@ -136,14 +124,34 @@ const Table = () => {
             if (categoryHttp.isRequestCancelled(error)) {
                 return;
             }
-            snackbar.enqueueSnackbar(
+            enqueueSnackbar(
                 'Não foi possível carregar as informações',
                 {
                     variant: 'error'
                 }
             );
         }
-    }
+    }, [setTotalRecords, enqueueSnackbar]);
+
+    useEffect(() => {
+        subscribed.current = true;
+        getData({
+            search: searchText,
+            page: debouncedFilterState.pagination.page,
+            per_page: debouncedFilterState.pagination.per_page,
+            sort: debouncedFilterState.order.sort,
+            dir: debouncedFilterState.order.dir,
+        });
+        return () => {
+            subscribed.current = false;
+        }
+    }, [
+        getData,
+        searchText,
+        debouncedFilterState.pagination.page,
+        debouncedFilterState.pagination.per_page,
+        debouncedFilterState.order,
+    ]);
 
     return (
         <MuiThemeProvider theme={makeActionStyles(columnsDefinition.length - 1)}>
