@@ -55,16 +55,16 @@ steps:
 
 - id: "Instalando frontend"
   name: 'docker'
-  args: ['exec', '-t', 'app', 'npm', 'install', '--prefix', '/var/www/frontend']
+  args: ['exec', '-t', 'micro-videos-app', 'npm', 'install', '--prefix', '/var/www/frontend']
 
 - id: "Habilitando permissao em scripts/build.sh"
   name: 'docker'
-  args: ['exec', '-t', 'app', 'chmod', '+x', '/var/www/frontend/scripts/build.sh']
+  args: ['exec', '-t', 'micro-videos-app', 'chmod', '+x', '/var/www/frontend/scripts/build.sh']
 
 - id: "Build do frontend"
   name: 'docker'
-  args: ['exec', '-t', 'app', 'npm', 'run', 'build-laravel', '--prefix', '/var/www/frontend']
+  args: ['exec', '-t', 'micro-videos-app', 'npm', 'run', 'build-laravel', '--prefix', '/var/www/frontend']
 
 - id: "Teste laravel e integracao com react"
   name: 'docker'
-  args: ['exec', '-w', '/var/www/backend', '-t', 'app', 'php', 'artisan', 'dusk', --env=testing]
+  args: ['exec', '-w', '/var/www/backend', '-t', 'micro-videos-app', 'php', 'artisan', 'dusk', --env=testing]
