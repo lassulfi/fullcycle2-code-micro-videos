@@ -49,22 +49,22 @@ steps:
   name: 'gcr.io/cloud-builders/docker'
   args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/backend/vendor/bin/phpunit', '-c', '/var/www/backend/phpunit.xml']
 
-  - id: "Copiando frontend .env"
-    name: 'docker'
-    args: ['exec', '-t', 'micro-videos-app', 'cp', '/var/www/frontend/.env.example', '/var/www/frontend/.env']
+- id: "Copiando frontend .env"
+  name: 'docker'
+  args: ['exec', '-t', 'micro-videos-app', 'cp', '/var/www/frontend/.env.example', '/var/www/frontend/.env']
 
-  - id: "Instalando frontend"
-    name: 'docker'
-    args: ['exec', '-t', 'app', 'npm', 'install', '--prefix', '/var/www/frontend']
+- id: "Instalando frontend"
+  name: 'docker'
+  args: ['exec', '-t', 'app', 'npm', 'install', '--prefix', '/var/www/frontend']
 
-  - id: "Habilitando permissao em scripts/build.sh"
-    name: 'docker'
-    args: ['exec', '-t', 'app', 'chmod', '+x', '/var/www/frontend/scripts/build.sh']
-  
-  - id: "Build do frontend"
-    name: 'docker'
-    args: ['exec', '-t', 'app', 'npm', 'run', 'build-laravel', '--prefix', '/var/www/frontend']
+- id: "Habilitando permissao em scripts/build.sh"
+  name: 'docker'
+  args: ['exec', '-t', 'app', 'chmod', '+x', '/var/www/frontend/scripts/build.sh']
 
-  - id: "Teste laravel e integracao com react"
-    name: 'docker'
-    args: ['exec', '-w', '/var/www/backend', '-t', 'app', 'php', 'artisan', 'dusk', --env=testing]
+- id: "Build do frontend"
+  name: 'docker'
+  args: ['exec', '-t', 'app', 'npm', 'run', 'build-laravel', '--prefix', '/var/www/frontend']
+
+- id: "Teste laravel e integracao com react"
+  name: 'docker'
+  args: ['exec', '-w', '/var/www/backend', '-t', 'app', 'php', 'artisan', 'dusk', --env=testing]
