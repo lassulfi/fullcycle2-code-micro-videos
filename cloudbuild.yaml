@@ -5,8 +5,8 @@ steps:
   args:
     - kms 
     - decrypt 
-    - --ciphertext-file=./storage/credentials/google/service-account-storage.json.enc
-    - --plaintext-file=./storage/credentials/google/service-account-storage.json
+    - --ciphertext-file=./backend/storage/credentials/google/service-account-storage.json.enc
+    - --plaintext-file=./backend/storage/credentials/google/service-account-storage.json
     - --location=global
     - --keyring=service-account-storage-lassulfi
     - --key=service-account
@@ -27,24 +27,44 @@ steps:
 
 - id: "Rodando o composer"
   name: 'docker'
-  args: ['exec', '-t', 'micro-videos-app', 'composer', 'install']
+  args: ['exec', '-t', 'micro-videos-app', 'composer', 'install', '-d', '/var/www/backend']
 
-- id: "Copiando .env"
+- id: "Copiando backend .env"
   name: 'docker'
-  args: ['exec', '-t', 'micro-videos-app', 'cp', '.env.example', '.env']
+  args: ['exec', '-t', 'micro-videos-app', 'cp', '/var/www/backend/.env.example', '/var/www/backend/.env']
 
-- id: "Copiando .env.testing"
+- id: "Copiando backend .env.testing"
   name: 'docker'
-  args: ['exec', '-t', 'micro-videos-app', 'cp', '.env.example', '.env.testing']
+  args: ['exec', '-t', 'micro-videos-app', 'cp', '/var/www/backend/.env.example', '/var/www/backend/.env.testing']
 
 - id: "Rodando key:generate"
   name: 'gcr.io/cloud-builders/docker'
-  args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/artisan', 'key:generate']
+  args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/backend/artisan', 'key:generate']
 
 - id: "Rodando migrations"
   name: 'gcr.io/cloud-builders/docker'
-  args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/artisan', 'migrate']
+  args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/backend/artisan', 'migrate']
 
 - id: "Rodando testes com phpunit"
   name: 'gcr.io/cloud-builders/docker'
-  args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/vendor/bin/phpunit', '-c', '/var/www/phpunit.xml']
+  args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/backend/vendor/bin/phpunit', '-c', '/var/www/backend/phpunit.xml']
+
+  - id: "Copiando frontend .env"
+    name: 'docker'
+    args: ['exec', '-t', 'micro-videos-app', 'cp', '/var/www/frontend/.env.example', '/var/www/frontend/.env']
+
+  - id: "Instalando frontend"
+    name: 'docker'
+    args: ['exec', '-t', 'app', 'npm', 'install', '--prefix', '/var/www/frontend']
+
+  - id: "Habilitando permissao em scripts/build.sh"
+    name: 'docker'
+    args: ['exec', '-t', 'app', 'chmod', '+x', '/var/www/frontend/scripts/build.sh']
+  
+  - id: "Build do frontend"
+    name: 'docker'
+    args: ['exec', '-t', 'app', 'npm', 'run', 'build-laravel', '--prefix', '/var/www/frontend']
+
+  - id: "Teste laravel e integracao com react"
+    name: 'docker'
+    args: ['exec', '-w', '/var/www/backend', '-t', 'app', 'php', 'artisan', 'dusk', --env=testing]

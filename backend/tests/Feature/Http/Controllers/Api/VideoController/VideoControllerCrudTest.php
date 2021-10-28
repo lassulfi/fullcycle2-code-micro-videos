@@ -4,6 +4,7 @@ namespace Tests\Feature\Http\Controllers\Api\VideoController;
 
 use App\Http\Controllers\Api\VideoController;
 use App\Http\Resources\VideoResource;
+use App\Models\CastMember;
 use App\Models\Category;
 use App\Models\Genre;
 use App\Models\Video;
@@ -24,7 +25,7 @@ use Tests\Traits\TestValidations;
 class VideoControllerCrudTest extends BaseVideoControllerTestCase
 {
     use TestValidations, TestSaves, TestResources;
-   
+
     public function testIndex()
     {
         $response = $this->get(route('videos.index'));
@@ -69,7 +70,8 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
             'rating' => '',
             'duration' => '',
             'categories_id' => '',
-            'genres_id' => ''
+            'genres_id' => '',
+            'cast_members_id' => ''
         ];
         $this->assertInvalidationInStoreAction($data, 'required');
         $this->assertInvalidationInUpdateAction($data, 'required');
@@ -143,6 +145,30 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
         $this->assertInvalidationInUpdateAction($data, 'exists');
     }
 
+    public function testInvalidationCastMembersId()
+    {
+        $data = [
+            'cast_members_id' => 'a'
+        ];
+        $this->assertInvalidationInStoreAction($data, 'array');
+        $this->assertInvalidationInUpdateAction($data, 'array');
+
+        $data = [
+            'cast_members_id' => [100]
+        ];
+        $this->assertInvalidationInStoreAction($data, 'exists');
+        $this->assertInvalidationInUpdateAction($data, 'exists');
+
+        $castMember = factory(CastMember::class)->create();
+        $castMember->delete();
+        $data = [
+            'cast_members_id' => [$castMember->id]
+        ];
+
+        $this->assertInvalidationInStoreAction($data, 'exists');
+        $this->assertInvalidationInUpdateAction($data, 'exists');
+    }
+
     public function testInvalidationGenresIdField()
     {
         $data = [
@@ -175,7 +201,7 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
 
     public function testSaveWithoutFiles()
     {
-        $testData = Arr::except($this->sentData, ['categories_id', 'genres_id']);
+        $testData = Arr::except($this->sentData, ['categories_id', 'genres_id', 'cast_members_id']);
         $data = [
             [
                 'send_data' => $this->sentData,
@@ -201,19 +227,20 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
                 'data' => $this->serializedFields
             ]);
             $id = $response->json('data.id');
-            $resource = new VideoResource(Video::find($id));
-            $this->assertResource($response, $resource);
+            $this->assertResource($response, new VideoResource(Video::find($id)));
             $this->assertHasCategory($id, $value['send_data']['categories_id'][0]);
             $this->assertHasGenre($id, $value['send_data']['genres_id'][0]);
+            $this->assertHasCastMember($id, $value['send_data']['cast_members_id'][0]);
             $response = $this->assertUpdate($value['send_data'], $value['test_data'] + ['deleted_at' => null]);
             $response->assertJsonStructure([
                 'data' => $this->serializedFields
             ]);
             $id = $response->json('data.id');
-            $resource = new VideoResource(Video::find($id));
-            $this->assertResource($response, $resource);
+            $video = Video::with(['categories', 'genres', 'castMembers'])->find($id);
+            $this->assertResource($response, new VideoResource($video));
             $this->assertHasCategory($id, $value['send_data']['categories_id'][0]);
             $this->assertHasGenre($id, $value['send_data']['genres_id'][0]);
+            $this->assertHasCastMember($id, $value['send_data']['cast_members_id'][0]);
         }
     }
 
@@ -225,7 +252,7 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
             ->assertNoContent();
     }
 
-    private function routeStore() 
+    private function routeStore()
     {
         return route('videos.store');
     }
@@ -257,6 +284,14 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
         $this->assertDatabaseHas('genre_video', [
             'video_id' => $videoId,
             'genre_id' => $genreId
+        ]);
+    }
+
+    protected function assertHasCastMember($videoId, $castMemberId)
+    {
+        $this->assertDatabaseHas('cast_member_video', [
+            'video_id' => $videoId,
+            'cast_member_id' => $castMemberId
         ]);
     }
 }

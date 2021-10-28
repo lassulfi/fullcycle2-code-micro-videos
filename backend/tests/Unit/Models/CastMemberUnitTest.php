@@ -5,6 +5,7 @@ namespace Tests\Unit\Models;
 use App\Models\Traits\Uuid;
 use App\Models\CastMember;
 use Tests\TestCase;
+use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CastMemberUnitTest extends TestCase
@@ -22,7 +23,7 @@ class CastMemberUnitTest extends TestCase
         $this->assertEquals(1, CastMember::TYPE_DIRECTOR);
         $this->assertEquals(2, CastMember::TYPE_ACTOR);
     }
-    
+
     public function testFillableAttributes()
     {
         $fillable = ['name', 'type'];
@@ -32,7 +33,7 @@ class CastMemberUnitTest extends TestCase
     public function testIfUsesTraits()
     {
         $traits = [
-            SoftDeletes::class, Uuid::class
+            SoftDeletes::class, Uuid::class, Filterable::class
         ];
         $castMemberTraits = array_keys(class_uses(CastMember::class));
         $this->assertEquals($traits, $castMemberTraits);
