@@ -17,9 +17,10 @@ abstract class DuskTestCase extends BaseTestCase
      * @beforeClass
      * @return void
      */
-    public static function prepare()
-    {
-        static::startChromeDriver();
+    public static function prepare() {
+        if (!static::runningInSail()) {
+            static::startChromeDriver();
+        }
     }
 
     /**
@@ -38,7 +39,7 @@ abstract class DuskTestCase extends BaseTestCase
         return RemoteWebDriver::create(
             'http://selenium:4444/wd/hub', DesiredCapabilities::chrome()->setCapability(
                 ChromeOptions::CAPABILITY, $options
-            )
+            )->setCapability('acceptInsecureCerts', TRUE)
         );
     }
 }
