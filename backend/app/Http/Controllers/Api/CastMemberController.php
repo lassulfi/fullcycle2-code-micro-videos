@@ -21,7 +21,7 @@ class CastMemberController extends BasicCrudController
     {
         return CastMember::class;
     }
-    
+
     protected function ruleStore()
     {
         return $this->rules;
@@ -32,7 +32,7 @@ class CastMemberController extends BasicCrudController
         return $this->rules;
     }
 
-    protected function resourceColletion()
+    protected function resourceCollection()
     {
         return $this->resource();
     }

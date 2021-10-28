@@ -6,6 +6,7 @@ use App\Models\Traits\Uuid;
 use App\Models\Traits\UploadFiles;
 use App\Models\Video;
 use Tests\TestCase;
+use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class VideoUnitTest extends TestCase
@@ -23,7 +24,7 @@ class VideoUnitTest extends TestCase
         $ratingList = ['L', '10', '12', '14', '16', '18'];
         $this->assertEquals($ratingList, Video::RATING_LIST);
     }
-    
+
     public function testFillableAttributes()
     {
         $fillable = [
@@ -44,7 +45,7 @@ class VideoUnitTest extends TestCase
     public function testIfUsesTraits()
     {
         $traits = [
-            SoftDeletes::class, Uuid::class, UploadFiles::class
+            SoftDeletes::class, Uuid::class, UploadFiles::class, Filterable::class
         ];
         $videoTraits = array_keys(class_uses(Video::class));
         $this->assertEquals($traits, $videoTraits);
@@ -81,7 +82,7 @@ class VideoUnitTest extends TestCase
         $this->assertEquals($keyType, $this->video->getKeyType());
     }
 
-    public function testCategoriesRelation() 
+    public function testCategoriesRelation()
     {
         $tableName = 'category_video';
         $relation = $this->video->categories();
@@ -98,8 +99,8 @@ class VideoUnitTest extends TestCase
     public function testFileFields()
     {
         $fileFields = [
-            'video_file', 
-            'thumb_file', 
+            'video_file',
+            'thumb_file',
             'banner_file',
             'trailer_file'
         ];

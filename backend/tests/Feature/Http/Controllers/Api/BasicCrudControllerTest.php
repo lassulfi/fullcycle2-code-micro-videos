@@ -128,6 +128,10 @@ class BasicCrudControllerTest extends TestCase
             ->shouldReceive('all')
             ->once()
             ->andReturn(['name' => '']);
+        $request
+            ->shouldReceive('isMethod')
+            ->once()
+            ->andReturn('put');
         $this->controller->update($request, $category->id);
     }
 
@@ -140,7 +144,11 @@ class BasicCrudControllerTest extends TestCase
             ->shouldReceive('all')
             ->once()
             ->andReturn(['name' => 'name_updated', 'description' => 'description_updated', 'is_active' => false]);
-        $result = $this->controller->update($request, $category->id);
+        $request
+            ->shouldReceive('isMethod')
+            ->once()
+            ->andReturn('put');
+            $result = $this->controller->update($request, $category->id);
         $serialized = $result->response()->getData(true);
         $category->refresh();
         $this->assertEquals($category->toArray(), $serialized['data']);

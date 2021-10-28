@@ -108,7 +108,7 @@ class GenreControllerTest extends TestCase
         $this->assertInvalidationInStoreAction($data, 'max.string', ['max' => 255]);
         $this->assertInvalidationInUpdateAction($data, 'max.string', ['max' => 255]);
     }
-    
+
     public function testInvalidationIsActiveField()
     {
         $data = [
@@ -130,7 +130,7 @@ class GenreControllerTest extends TestCase
             'categories_id'=> [100]
         ];
         $this->assertInvalidationInStoreAction($data, 'exists');
-        $this->assertInvalidationInUpdateAction($data, 'exists'); 
+        $this->assertInvalidationInUpdateAction($data, 'exists');
 
         $category = factory(Category::class)->create();
         $category->delete();
@@ -138,7 +138,7 @@ class GenreControllerTest extends TestCase
             'categories_id' => [$category->id]
         ];
         $this->assertInvalidationInStoreAction($data, 'exists');
-        $this->assertInvalidationInUpdateAction($data, 'exists'); 
+        $this->assertInvalidationInUpdateAction($data, 'exists');
     }
 
     public function testSave()
@@ -164,7 +164,7 @@ class GenreControllerTest extends TestCase
             $resource = new GenreResource(Genre::find($id));
             $this->assertResource($response, $resource);
             $this->assertHasCategory($id, $categoryId);
-            
+
             $response = $this->assertUpdate($value['send_data'], $value['test_data'] + ['deleted_at' => null]);
             $response->assertJsonStructure([
                 'data' => $this->serializedFields
@@ -195,7 +195,7 @@ class GenreControllerTest extends TestCase
             'name' => 'test',
             'categories_id' => [$categoriesId[1], $categoriesId[2]]
         ];
-        $response = $this->json('PUT', route('genres.update', ['genre' => $id]), 
+        $response = $this->json('PUT', route('genres.update', ['genre' => $id]),
             $sendData);
         $id = $response->json('data.id');
         $this->assertDatabaseMissing('category_genre', [

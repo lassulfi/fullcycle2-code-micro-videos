@@ -4,6 +4,7 @@ namespace Tests\Unit\Models;
 
 use App\Models\Category;
 use Tests\TestCase;
+use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Traits\Uuid;
 // Better PHPUnit => VSCode Extension
@@ -11,13 +12,13 @@ use App\Models\Traits\Uuid;
 class CategoryUnitTest extends TestCase
 {
     private $category;
-    
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->category = new Category();
     }
-    
+
     public function testFillableAttribute()
     {
         $fillable = ['name', 'description', 'is_active'];
@@ -27,24 +28,24 @@ class CategoryUnitTest extends TestCase
     public function testIfUseTraits()
     {
         $traits = [
-            SoftDeletes::class, Uuid::class
+            SoftDeletes::class, Uuid::class, Filterable::class
         ];
         $categoryTraits = array_keys(class_uses(Category::class));
         $this->assertEquals($traits, $categoryTraits);
     }
 
-    public function testKeyTypeAttribute() 
+    public function testKeyTypeAttribute()
     {
         $keyType = 'string';
         $this->assertEquals($keyType, $this->category->getKeyType());
     }
 
-    public function testIncrementingAttribute() 
+    public function testIncrementingAttribute()
     {
         $this->assertFalse($this->category->incrementing);
     }
 
-    public function testDatesAttribute() 
+    public function testDatesAttribute()
     {
         $dates = ['deleted_at', 'created_at', 'updated_at'];
         foreach ($dates as $date) {
@@ -53,7 +54,7 @@ class CategoryUnitTest extends TestCase
         $this->assertCount(count($dates), $this->category->getDates());
     }
 
-    public function testCastsAttribute() 
+    public function testCastsAttribute()
     {
         $casts = [
             'id' => 'string',

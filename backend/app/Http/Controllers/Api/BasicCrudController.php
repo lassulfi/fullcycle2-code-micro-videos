@@ -20,7 +20,7 @@ abstract class BasicCrudController extends Controller
 
     protected abstract function resource();
 
-    protected abstract function resourceColletion();
+    protected abstract function resourceCollection();
 
     /**
      * Display a listing of the resource.
@@ -41,12 +41,12 @@ abstract class BasicCrudController extends Controller
             ? $query->get()
             : $query->paginate($perPage);
 
-        $resourceColletionClass = $this->resourceColletion();
-        $refClass = new \ReflectionClass($resourceColletionClass);
+        $resourceCollectionClass = $this->resourceCollection();
+        $refClass = new \ReflectionClass($resourceCollectionClass);
 
         return $refClass->isSubclassOf(ResourceCollection::class)
-            ? new $resourceColletionClass($data)
-            : $resourceColletionClass::collection($data);
+            ? new $resourceCollectionClass($data)
+            : $resourceCollectionClass::collection($data);
     }
 
     /**
