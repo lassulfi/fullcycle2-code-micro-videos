@@ -67,4 +67,4 @@ steps:
 
 - id: "Teste laravel e integracao com react"
   name: 'docker'
-  args: ['exec', '-w', '/var/www/backend', '-t', 'micro-videos-app', 'php', 'artisan', 'dusk', --env=testing]
+  args: ['exec', '-w', '/var/www/backend', '-t', 'micro-videos-app', 'php', 'artisan', 'dusk', '--env=testing']
