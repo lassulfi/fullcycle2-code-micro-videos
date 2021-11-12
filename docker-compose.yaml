@@ -16,6 +16,7 @@ services:
             - ./.docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini
         networks:
             - app-network
+            - rabbitmq_codeflix
         depends_on:
             - db
             - redis
@@ -60,12 +61,16 @@ services:
             - app-network
 
     selenium:
-        image: selenium/standalone-chrome
+        image: selenium/standalone-chrome:87.0
         expose:
             - 4444
+        environment:
+            - JAVA_OPTS=-Dwebdriver.chrome.whitelistedIps=
         networks:
             - app-network
 
 networks:
     app-network:
         driver: bridge
+    rabbitmq_codeflix:
+     external: true

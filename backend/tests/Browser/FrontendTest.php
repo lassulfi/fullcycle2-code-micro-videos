@@ -17,7 +17,7 @@ class FrontendTest extends DuskTestCase
     {
         $this->browse(function (Browser $browser) {
             $browser->visit('/admin/categories')
-                    ->waitForText('Listagem de categorias', 10)
+                    ->waitForText('Listagem de categorias', 20)
                     ->assertSee('Listagem de categorias');
         });
     }
