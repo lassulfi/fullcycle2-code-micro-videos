@@ -18,9 +18,8 @@ abstract class DuskTestCase extends BaseTestCase
      * @return void
      */
     public static function prepare() {
-        if (!static::runningInSail()) {
-            static::startChromeDriver();
-        }
+        //static::useChromedriver('/var/www/backend/vendor/laravel/dusk/bin/chromedriver-linux');
+        static::startChromeDriver();
     }
 
     /**
@@ -39,7 +38,7 @@ abstract class DuskTestCase extends BaseTestCase
         return RemoteWebDriver::create(
             'http://selenium:4444/wd/hub', DesiredCapabilities::chrome()->setCapability(
                 ChromeOptions::CAPABILITY, $options
-            )->setCapability('acceptInsecureCerts', TRUE)
+            )
         );
     }
 }
