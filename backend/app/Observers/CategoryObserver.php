@@ -29,7 +29,10 @@ class CategoryObserver
      */
     public function updated(Category $category)
     {
-        //
+        $message = new Message(
+            $category->toJson()
+        );
+        \Amqp::publish('model.category.updated', $message);
     }
 
     /**
@@ -40,7 +43,10 @@ class CategoryObserver
      */
     public function deleted(Category $category)
     {
-        //
+        $message = new Message(
+            json_encode(['id' => $category->id])
+        );
+        \Amqp::publish('model.category.deleted', $message);
     }
 
     /**
