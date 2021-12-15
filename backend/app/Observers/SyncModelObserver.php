@@ -13,7 +13,7 @@ class SyncModelObserver
         $modelName = $this->getModelName($model);
         $data = $model->toArray();
         $action = __FUNCTION__;
-        $routingKey = "model.${modelName}.${action}";
+        $routingKey = "model.{$modelName}.{$action}";
 
         try {
             $this->publish($routingKey, $data);
@@ -32,7 +32,7 @@ class SyncModelObserver
         $modelName = $this->getModelName($model);
         $data = $model->toArray();
         $action = __FUNCTION__;
-        $routingKey = "model.${modelName}.${action}";
+        $routingKey = "model.{$modelName}.{$action}";
         try {
             $this->publish($routingKey, $data);
         } catch (\Exception $exception) {
@@ -50,7 +50,7 @@ class SyncModelObserver
         $modelName = $this->getModelName($model);
         $data = ['id' => $model->id];
         $action = __FUNCTION__;
-        $routingKey = "model.${modelName}.${action}";
+        $routingKey = "model.{$modelName}.{$action}";
         try {
             $this->publish($routingKey, $data);
         } catch (\Exception $exception) {
@@ -58,6 +58,26 @@ class SyncModelObserver
                 'modelName' => $modelName,
                 'id' => $model->id,
                 'action' => $action,
+                'exception' => $exception
+            ]);
+        }
+    }
+
+    public function belongsToManyAttached($relation, $model, $ids) {
+        $modelName = $this->getModelName($model);
+        $relationName = Str::snake($relation);
+        $routingKey = "model.{$modelName}_{$relationName}.attached";
+        $data = [
+            'id' => $model->id,
+            'reations_ids' => $ids
+        ];
+        try {
+            $this->publish($routingKey, $data);
+        } catch (\Exception $exception) {
+            $this->reportException([
+                'modelName' => $modelName,
+                'id' => $model->id,
+                'action' => "attached",
                 'exception' => $exception
             ]);
         }

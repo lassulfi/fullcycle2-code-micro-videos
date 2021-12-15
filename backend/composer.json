@@ -11,6 +11,7 @@
         "php": "^7.2",
         "barryvdh/laravel-cors": "^2.0",
         "bschmitt/laravel-amqp": "2.0.10",
+        "chelout/laravel-relationship-events": "1.2.1",
         "fideloper/proxy": "^4.0",
         "laravel/dusk": "^6.19",
         "laravel/framework": "~6.18",
