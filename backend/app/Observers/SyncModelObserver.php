@@ -69,7 +69,7 @@ class SyncModelObserver
         $routingKey = "model.{$modelName}_{$relationName}.attached";
         $data = [
             'id' => $model->id,
-            'reations_ids' => $ids
+            'relation_ids' => $ids
         ];
         try {
             $this->publish($routingKey, $data);
