@@ -1,0 +1,69 @@
+version: '3'
+
+services:
+
+    app:
+        build: .
+        environment: 
+            - GOOGLE_CLOUD_PROJECT_ID=${PROJECT_ID}
+            - GOOGLE_CLOUD_KEY_FILE=${GOOGLE_CLOUD_KEY_FILE}
+            - GOOGLE_CLOUD_STORAGE_BUCKET=${GOOGLE_CLOUD_STORAGE_BUCKET}
+            - GOOGLE_CLOUD_STORAGE_API_URI=${GOOGLE_CLOUD_STORAGE_API_URI}
+            - TESTING_PROD=${TESTING_PROD}
+        container_name: micro-videos-app
+        volumes:
+            - .:/var/www
+            - ./.docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini
+        networks:
+            - app-network
+        depends_on:
+            - db
+            - redis
+
+    nginx:
+        build: .docker/nginx
+        container_name: micro-videos-nginx
+        restart: always
+        tty: true
+        ports:
+            - "8000:80"
+        volumes:
+            - .:/var/www
+        networks:
+            - app-network
+        depends_on:
+            - app
+
+    db:
+        build: ./.docker/mysql
+        container_name: micro-videos-db
+        restart: always
+        tty: true
+        ports:
+            - "33006:3306"
+        volumes:
+            - ./.docker/dbdata:/var/lib/mysql
+            - ./.docker/mysql:/docker-entrypoint-initdb.d
+        environment:
+            - MYSQL_ROOT_PASSWORD=root
+        networks:
+            - app-network
+
+    redis:
+        image: redis:alpine
+        container_name: micro-videos-redis
+        expose:
+            - 6379
+        networks:
+            - app-network
+
+    selenium:
+        image: selenium/standalone-chrome
+        expose:
+            - 4444
+        networks:
+            - app-network
+
+networks:
+    app-network:
+        driver: bridge
