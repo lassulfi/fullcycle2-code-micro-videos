@@ -61,7 +61,7 @@ services:
             - app-network
 
     selenium:
-        image: selenium/standalone-chrome:87.0
+        image: selenium/standalone-chrome:92.0.4515.159-chromedriver-92.0.4515.107-20210823
         expose:
             - 4444
         environment:

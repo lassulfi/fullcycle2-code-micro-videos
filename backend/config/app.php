@@ -175,6 +175,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         Bschmitt\Amqp\AmqpServiceProvider::class,
+        App\Providers\SyncServiceProvider::class,
     ],
 
     /*
