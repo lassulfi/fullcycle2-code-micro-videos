@@ -17,9 +17,11 @@ services:
         networks:
             - app-network
             - rabbitmq_codeflix
-        depends_on:
+        depends_on: 
             - db
             - redis
+        extra_hosts:
+            - "host.docker.internal:172.17.0.1"
 
     nginx:
         build: .docker/nginx

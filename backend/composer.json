@@ -19,7 +19,8 @@
         "laravel/tinker": "^1.0",
         "laravel/ui": "^1.0",
         "superbalist/laravel-google-cloud-storage": "^2.2",
-        "tucker-eric/eloquentfilter": "^3.0"
+        "tucker-eric/eloquentfilter": "^3.0",
+        "vizir/laravel-keycloak-web-guard": "^2.3"
     },
     "require-dev": {
         "beyondcode/laravel-dump-server": "^1.3",
