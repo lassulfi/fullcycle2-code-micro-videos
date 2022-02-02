@@ -20,6 +20,7 @@
         "laravel/ui": "^1.0",
         "superbalist/laravel-google-cloud-storage": "^2.2",
         "tucker-eric/eloquentfilter": "^3.0",
+        "tymon/jwt-auth": "^1.0",
         "vizir/laravel-keycloak-web-guard": "^2.3"
     },
     "require-dev": {
