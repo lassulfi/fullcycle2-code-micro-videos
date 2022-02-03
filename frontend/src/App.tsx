@@ -1,5 +1,4 @@
 import React from 'react';
-import logo from './logo.svg';
 // import './App.css';
 import { Box, CssBaseline, MuiThemeProvider } from '@material-ui/core';
 import { Navbar } from './components/Navbar';
@@ -10,10 +9,12 @@ import theme from './theme';
 import SnackbarProvider from './components/SnackbarProvider';
 import Spinner from './components/Spinner';
 import LoadingProvider from './components/loading/LoadingProvider';
+import { ReactKeycloakProvider } from '@react-keycloak/web';
+import { keycloak, keycloakConfig } from './utils/auth';
 
 function App() {
   return (
-    <React.Fragment>
+    <ReactKeycloakProvider authClient={keycloak} initOptions={keycloakConfig}>
       <LoadingProvider>
         <MuiThemeProvider theme={theme}>
           <CssBaseline />
@@ -29,7 +30,7 @@ function App() {
           </SnackbarProvider>
         </MuiThemeProvider>
       </LoadingProvider>
-    </React.Fragment>
+    </ReactKeycloakProvider>
   );
 }
 

@@ -1,0 +1,3 @@
+GET http://localhost:8000/api/categories
+Accept: application/json
+Authorization: Bearer {{token}}
