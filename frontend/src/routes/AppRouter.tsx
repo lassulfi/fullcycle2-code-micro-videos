@@ -1,10 +1,20 @@
 // @flow 
+import { useKeycloak } from '@react-keycloak/web';
 import React from 'react';
 import { Route as ReactRoute, Switch } from 'react-router-dom';
+import Waiting from '../components/Waiting';
 import routes from './index';
 import PrivateRoute from './PrivateRoute';
 
 const AppRouter: React.FC = () => {
+    const { initialized } = useKeycloak();
+
+    if (!initialized) {
+        return (
+            <Waiting />
+        )
+    }
+
     return (
         <Switch>
             {

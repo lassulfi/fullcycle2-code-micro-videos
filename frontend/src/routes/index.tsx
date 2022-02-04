@@ -10,6 +10,7 @@ import VideoForm from '../pages/video/PageForm';
 import UploadPage from '../pages/uploads';
 
 import Dashboard from "../pages/Dashboard";
+import Login from "../pages/Login";
 
 export interface MyRouteProps extends RouteProps {
     name: string;
@@ -18,6 +19,14 @@ export interface MyRouteProps extends RouteProps {
 }
 
 const routes: MyRouteProps[] = [
+    {
+        name: 'login',
+        label: 'login',
+        path: '/login',
+        component: Login,
+        exact: true,
+        auth: false
+    },
     {
         name: 'dashboard',
         label: 'Dashboard',

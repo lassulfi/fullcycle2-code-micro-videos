@@ -19,7 +19,7 @@ function App() {
         <MuiThemeProvider theme={theme}>
           <CssBaseline />
           <SnackbarProvider>
-            <BrowserRouter basename="/admin">
+            <BrowserRouter basename={process.env.REACT_APP_BASENAME}>
               <Spinner />
               <Navbar/>
               <Box paddingTop={'70px'}>
