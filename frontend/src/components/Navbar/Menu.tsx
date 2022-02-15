@@ -1,12 +1,13 @@
 // @flow 
-import { IconButton, Menu as MuiMenu, MenuItem } from '@material-ui/core';
+import { Divider, IconButton, Menu as MuiMenu, MenuItem, Link as MuiLink } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
+import { useKeycloak } from '@react-keycloak/web';
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 import routes, { MyRouteProps } from '../../routes';
 
 const listRoutes = {
-    'dashboard': 'Dashboard', 
+    'dashboard': 'Dashboard',
     'categories.list': 'Categorias',
     'genres.list': 'Gêneros',
     'cast_members.list': 'Membros de elenco',
@@ -17,12 +18,21 @@ const listRoutes = {
 const menuRoutes = routes.filter(route => Object.keys(listRoutes).includes(route.name));
 
 export const Menu = () => {
+    const { keycloak, initialized } = useKeycloak();
     const [anchorEl, setAnchorEl] = React.useState(null);
     const open = Boolean(anchorEl);
 
-    const handleOpen = (event:any) => setAnchorEl(event.currentTarget);
+    const handleOpen = (event: any) => setAnchorEl(event.currentTarget);
 
-    const handleClose = () => setAnchorEl(null); 
+    const handleClose = () => setAnchorEl(null);
+
+    const isNotInitializedOrAuthenticated = () => (
+        !initialized || !keycloak.authenticated
+    )
+
+    if (isNotInitializedOrAuthenticated()) {
+        return null;
+    }
 
     return (
         <React.Fragment>
@@ -41,8 +51,8 @@ export const Menu = () => {
                 open={open}
                 anchorEl={anchorEl}
                 onClose={handleClose}
-                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
-                transformOrigin={{vertical: 'top', horizontal: 'center'}}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'center' }}
                 getContentAnchorEl={null}
             >
                 {
@@ -62,6 +72,17 @@ export const Menu = () => {
                         }
                     )
                 }
+                <Divider />
+                <MenuItem
+                    component={MuiLink}
+                    href={"http://"}
+                    rel="noopener"
+                    target="_blank"
+                    color={"textPrimary"}
+                    onClick={handleClose}
+                >
+                    Usuários
+                </MenuItem>
             </MuiMenu>
         </React.Fragment>
     );
