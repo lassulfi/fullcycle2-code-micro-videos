@@ -36,11 +36,14 @@ class KeycloakGuard implements Guard
             $token = $this->jwt->setRequest($this->request)->getToken() &&
             ($payload = $this->jwt->check(true))
         ) {
+            $roles = isset($payload['realm_access']) && property_exists($payload['realm_access'], 'roles')
+                ? $payload['realm_access']->roles : [];
             return $this->user = new User(
                 $payload['sub'],
                 $payload['name'],
                 $payload['email'],
-                $token
+                $token,
+                $roles
             );
         }
     }
