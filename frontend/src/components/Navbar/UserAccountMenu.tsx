@@ -3,9 +3,10 @@ import { Divider, IconButton, Menu as MuiMenu, MenuItem } from '@material-ui/cor
 import AccountBoxIcon from '@material-ui/icons/AccountBox';
 import { useKeycloak } from '@react-keycloak/web';
 import * as React from 'react';
+import { useHasRealmRole } from '../../hooks/useHasRole';
 
 const UserAccountMenu = () => {
-    const { keycloak, initialized } = useKeycloak();
+    const hasCatalogAdmin = useHasRealmRole('catalog_admin');
     const [anchorEl, setAnchorEl] = React.useState(null);
     const open = Boolean(anchorEl);
 
@@ -13,11 +14,7 @@ const UserAccountMenu = () => {
 
     const handleClose = () => setAnchorEl(null); 
 
-    const isNotInitializedOrAuthenticated = () => (
-        !initialized || !keycloak.authenticated
-    )
-
-    if (isNotInitializedOrAuthenticated()) {
+    if (!hasCatalogAdmin) {
         return null;
     }
 

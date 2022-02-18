@@ -1,9 +1,9 @@
 // @flow 
 import { Divider, IconButton, Menu as MuiMenu, MenuItem, Link as MuiLink } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
-import { useKeycloak } from '@react-keycloak/web';
 import * as React from 'react';
 import { Link } from 'react-router-dom';
+import { useHasRealmRole } from '../../hooks/useHasRole';
 import routes, { MyRouteProps } from '../../routes';
 
 const listRoutes = {
@@ -18,7 +18,7 @@ const listRoutes = {
 const menuRoutes = routes.filter(route => Object.keys(listRoutes).includes(route.name));
 
 export const Menu = () => {
-    const { keycloak, initialized } = useKeycloak();
+    const hasCatalogAdmin = useHasRealmRole('catalog_admin');
     const [anchorEl, setAnchorEl] = React.useState(null);
     const open = Boolean(anchorEl);
 
@@ -26,11 +26,7 @@ export const Menu = () => {
 
     const handleClose = () => setAnchorEl(null);
 
-    const isNotInitializedOrAuthenticated = () => (
-        !initialized || !keycloak.authenticated
-    )
-
-    if (isNotInitializedOrAuthenticated()) {
+    if (!hasCatalogAdmin) {
         return null;
     }
 
