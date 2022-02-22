@@ -14,3 +14,19 @@ export function useHasRealmRole(role: string) {
 
     return hasRole;
 }
+
+export function useHasClient(clientName: string) {
+    const { keycloak, initialized } = useKeycloak();
+
+    const hasRole = useMemo(() => {
+        if (!initialized || !keycloak.authenticated) {
+            return false;
+        }
+
+        const countRoles = keycloak.resourceAccess?.[clientName]?.roles?.length;
+
+        return !countRoles ? false : true;
+    }, [initialized, keycloak, clientName]);
+
+    return hasRole;
+}

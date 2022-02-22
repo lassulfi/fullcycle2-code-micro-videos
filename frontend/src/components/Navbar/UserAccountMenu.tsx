@@ -1,18 +1,20 @@
 // @flow 
-import { Divider, IconButton, Menu as MuiMenu, MenuItem } from '@material-ui/core';
+import { Divider, IconButton, Link, Menu as MuiMenu, MenuItem } from '@material-ui/core';
 import AccountBoxIcon from '@material-ui/icons/AccountBox';
 import { useKeycloak } from '@react-keycloak/web';
 import * as React from 'react';
-import { useHasRealmRole } from '../../hooks/useHasRole';
+import { useHasClient, useHasRealmRole } from '../../hooks/useHasRole';
+import { keycloakLinks } from '../../utils/auth';
 
 const UserAccountMenu = () => {
     const hasCatalogAdmin = useHasRealmRole('catalog_admin');
+    const hasAdminReal = useHasClient('realm-management');
     const [anchorEl, setAnchorEl] = React.useState(null);
     const open = Boolean(anchorEl);
 
-    const handleOpen = (event:any) => setAnchorEl(event.currentTarget);
+    const handleOpen = (event: any) => setAnchorEl(event.currentTarget);
 
-    const handleClose = () => setAnchorEl(null); 
+    const handleClose = () => setAnchorEl(null);
 
     if (!hasCatalogAdmin) {
         return null;
@@ -35,8 +37,8 @@ const UserAccountMenu = () => {
                 open={open}
                 anchorEl={anchorEl}
                 onClose={handleClose}
-                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
-                transformOrigin={{vertical: 'top', horizontal: 'center'}}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'center' }}
                 getContentAnchorEl={null}
             >
                 <MenuItem
@@ -45,7 +47,24 @@ const UserAccountMenu = () => {
                     Full Cycle
                 </MenuItem>
                 <Divider />
-                <MenuItem>
+                {hasAdminReal && (<MenuItem
+                    component={Link}
+                    href={keycloakLinks.adminConsole}
+                    target="_blank"
+                    rel="noopener"
+                    onClick={handleClose}
+                    color="textPrimary"
+                >
+                    Auth. Admin
+                </MenuItem>)}
+                <MenuItem
+                    component={Link}
+                    href={keycloakLinks.accountConsole}
+                    target="_blank"
+                    rel="noopener"
+                    onClick={handleClose}
+                    color="textPrimary"
+                >
                     Minha conta
                 </MenuItem>
                 <MenuItem>
